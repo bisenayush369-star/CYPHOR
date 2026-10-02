@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root,
+  .dark {
+    /* ink neutrals */
+    --background: 224 24% 7%;
+    --foreground: 210 24% 93%;
+
+    --card: 223 22% 10%;
+    --card-foreground: 210 24% 93%;
+
+    --popover: 223 24% 9%;
+    --popover-foreground: 210 24% 93%;
+
+    /* signal teal — the one accent this system spends */
+    --primary: 174 72% 42%;
+    --primary-foreground: 222 30% 8%;
+
+    --secondary: 222 18% 15%;
+    --secondary-foreground: 210 20% 90%;
+
+    --muted: 222 16% 13%;
+    --muted-foreground: 217 12% 58%;
+
+    --accent: 222 18% 16%;
+    --accent-foreground: 210 22% 94%;
+
+    --destructive: 359 70% 56%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 222 18% 17%;
+    --input: 222 18% 15%;
+    --ring: 174 72% 42%;
+
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    color-scheme: dark;
+  }
+  ::selection {
+    background-color: hsl(174 72% 42% / 0.28);
+    color: hsl(var(--foreground));
+  }
+}
+
+/* Thin, quiet scrollbars in the signal color on hover */
+@layer utilities {
+  .cy-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(222 18% 22%) transparent;
+  }
+  .cy-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .cy-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .cy-scroll::-webkit-scrollbar-thumb {
+    background-color: hsl(222 18% 22%);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  .cy-scroll:hover::-webkit-scrollbar-thumb {
+    background-color: hsl(174 40% 32%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

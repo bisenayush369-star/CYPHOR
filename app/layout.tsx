@@ -1,37 +1,37 @@
-// import type { Metadata, LayoutProps } from "next";
-import type { Metadata } from "next";
-import { Space_Grotesk, IBM_Plex_Sans, IBM_Plex_Mono, Geist } from "next/font/google";
-import "./globals.css";
-import { cn } from "@/lib/utils";
-
-const display = Space_Grotesk({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-});
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
-const mono = IBM_Plex_Mono({
-  variable: "--font-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
-});
+import type { Metadata, Viewport } from "next"
+import "./globals.css"
+import { Shell } from "@/components/shell"
+import { NO_FLASH_SCRIPT } from "@/lib/no-flash"
+import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
-  title: "Cyphor",
-  description: "Cyphor — an AI chat interface.",
-};
+  title: { default: "Cyphor Chat", template: "%s · Cyphor" },
+  description: "Cyphor is a calm workspace for thinking with an LLM.",
+}
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  interactiveWidget: "resizes-content",
+  colorScheme: "light dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f5f3ee" },
+    { media: "(prefers-color-scheme: dark)", color: "#171c1e" },
+  ],
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={cn("dark", display.variable, mono.variable, "font-sans", geist.variable)}
-    >
-      <body className="min-h-screen bg-background font-sans text-foreground antialiased">
-        {children}
+    // The inline script and the app itself change <html> attributes (theme, font, effects) before
+    // React looks at them, so the server's copy is allowed to differ.
+    <html lang="en" data-font="serif" data-effects="full" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: NO_FLASH_SCRIPT }} />
+      </head>
+      <body className={cn("antialiased")}>
+        <Shell>{children}</Shell>
       </body>
     </html>
-  );
+  )
 }

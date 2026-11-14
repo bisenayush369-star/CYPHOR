@@ -1,0 +1,18 @@
+/*
+ * The app's own stylesheet, plus the folders Tailwind has to read for class names. The preview is built
+ * from this folder, so without these lines Tailwind would look no further than here and leave the app unstyled.
+ */
+@import "../app/globals.css";
+@source "../app";
+@source "../components";
+@source "../lib";
+
+/*
+ * A page frame that hosts this preview may set its own body font outside any cascade layer, and that beats the
+ * layered base rules in globals.css. Say the same thing again here, outside a layer, so the preview keeps its type.
+ */
+html body {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+}

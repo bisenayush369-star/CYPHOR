@@ -1,0 +1,3102 @@
+{
+ "format": 1,
+ "name": "cyphor-chat",
+ "about": "File list of the delivered cyphor-chat project. Hashes are SHA-256 of each file with line endings read as LF.",
+ "node": ">=22.18",
+ "steps": [
+  {
+   "id": "foundation",
+   "number": 1,
+   "title": "Tooling and shared basics",
+   "prompt": "cyphor-1-foundation",
+   "expect": {
+    "typecheck": "no errors",
+    "unitTests": null
+   }
+  },
+  {
+   "id": "server",
+   "number": 2,
+   "title": "Database, proxy and conversation API",
+   "prompt": "cyphor-2-server",
+   "expect": {
+    "typecheck": "no errors",
+    "unitTests": 50
+   }
+  },
+  {
+   "id": "router",
+   "number": 3,
+   "title": "LLM router, God Mode and chat API",
+   "prompt": "cyphor-3-router",
+   "expect": {
+    "typecheck": "no errors",
+    "unitTests": 137
+   }
+  },
+  {
+   "id": "interface",
+   "number": 4,
+   "title": "Screens, components and browser logic",
+   "prompt": "cyphor-4-interface",
+   "expect": {
+    "typecheck": "no errors",
+    "unitTests": 170
+   }
+  },
+  {
+   "id": "e2e",
+   "number": 5,
+   "title": "Browser tests",
+   "prompt": "cyphor-5-tests",
+   "expect": {
+    "typecheck": "no errors",
+    "unitTests": 170
+   }
+  },
+  {
+   "id": "docs",
+   "number": null,
+   "title": "Project docs (optional)",
+   "prompt": null
+  },
+  {
+   "id": "preview",
+   "number": null,
+   "title": "Single-file preview build (optional)",
+   "prompt": null
+  },
+  {
+   "id": "tooling",
+   "number": null,
+   "title": "Design-tool skills for Claude Code (optional)",
+   "prompt": null
+  }
+ ],
+ "reference": {
+  "scripts": {
+   "dev": "next dev",
+   "build": "next build",
+   "start": "next start",
+   "typecheck": "tsc --noEmit",
+   "test": "npm run test:unit && npm run test:e2e",
+   "test:unit": "node --import ./tests/unit/register.mjs --test \"tests/unit/*.test.ts\"",
+   "test:e2e": "playwright test",
+   "db:generate": "drizzle-kit generate",
+   "db:push": "drizzle-kit push",
+   "db:studio": "drizzle-kit studio",
+   "tree": "node scripts/file-tree.mjs",
+   "build:preview": "vite build --config preview/vite.config.ts"
+  },
+  "dependencies": {
+   "@fontsource-variable/atkinson-hyperlegible-next": "^5.3.0",
+   "@fontsource-variable/literata": "^5.3.0",
+   "@fontsource-variable/schibsted-grotesk": "^5.3.0",
+   "@fontsource-variable/spline-sans-mono": "^5.3.0",
+   "@gsap/react": "^2.1.2",
+   "@libsql/client": "^0.18.0",
+   "@tailwindcss/postcss": "^4.3.3",
+   "class-variance-authority": "^0.7.1",
+   "clsx": "^2.1.1",
+   "cmdk": "^1.1.1",
+   "drizzle-orm": "^0.45.4",
+   "gsap": "^3.15.0",
+   "highlight.js": "^11.12.0",
+   "lucide-react": "^1.62.0",
+   "next": "^16.4.3",
+   "radix-ui": "^1.8.1",
+   "react": "^19.3.1",
+   "react-dom": "^19.3.1",
+   "react-hook-form": "^7.91.0",
+   "react-markdown": "^10.1.0",
+   "react-resizable-panels": "^4.15.0",
+   "remark-gfm": "^4.0.1",
+   "sonner": "^2.0.8",
+   "tailwind-merge": "^3.7.0",
+   "tw-animate-css": "^1.4.0",
+   "vaul": "^1.1.2",
+   "zustand": "^5.0.16"
+  },
+  "devDependencies": {
+   "@axe-core/playwright": "^4.14.0",
+   "@playwright/test": "^1.64.1",
+   "@tailwindcss/vite": "^4.3.3",
+   "@types/node": "^26.6.5",
+   "@types/react": "^19.3.0",
+   "@types/react-dom": "^19.3.0",
+   "@vitejs/plugin-react": "^6.1.2",
+   "drizzle-kit": "^0.31.11",
+   "shadcn": "^4.23.0",
+   "tailwindcss": "^4.3.3",
+   "typescript": "^7.0.2",
+   "vite": "^8.3.5",
+   "vite-plugin-singlefile": "^2.3.4"
+  }
+ },
+ "files": [
+  {
+   "path": ".env.example",
+   "sha256": "2d551aad88190ce9641db1412d50c08cf37ba36836998064f6888c3a617a1bba",
+   "bytes": 3383,
+   "lines": 75,
+   "step": "foundation",
+   "kind": "required",
+   "merge": true
+  },
+  {
+   "path": ".gitignore",
+   "sha256": "844731c854275430d61441bc2c3957fcd5f860661fec45386544354a8b176b52",
+   "bytes": 255,
+   "lines": 21,
+   "step": "foundation",
+   "kind": "required",
+   "merge": true
+  },
+  {
+   "path": ".mcp.json",
+   "sha256": "5acb24c8546a150a3975e2c9c92e11cf379d10d75987decc781ec8bfd743b072",
+   "bytes": 288,
+   "lines": 16,
+   "step": "foundation",
+   "kind": "optional"
+  },
+  {
+   "path": "components.json",
+   "sha256": "7786a4e7cb4c70aaa0a91585f61113b889a1ea281ec9e4eb02be856b01fa8e33",
+   "bytes": 431,
+   "lines": 21,
+   "step": "foundation",
+   "kind": "required",
+   "merge": true
+  },
+  {
+   "path": "drizzle.config.ts",
+   "sha256": "ec7ca7b6e982c7a9517000f2738e66f563c94e44da394f8dc00015818f0241aa",
+   "bytes": 902,
+   "lines": 16,
+   "step": "foundation",
+   "kind": "required"
+  },
+  {
+   "path": "lib/env.d.ts",
+   "sha256": "de3c753bc5f24ea1c04d3f0b63e5b7782735577b8a880638112d79d0b67819e4",
+   "bytes": 162,
+   "lines": 2,
+   "step": "foundation",
+   "kind": "required"
+  },
+  {
+   "path": "lib/router/types.ts",
+   "sha256": "799aece75279d718862beacc4fcb1ae9ba55d72a9d2c9509d353024102cdc165",
+   "bytes": 4870,
+   "lines": 160,
+   "step": "foundation",
+   "kind": "required"
+  },
+  {
+   "path": "lib/types.ts",
+   "sha256": "f374dd3c7a83b23990994de26752fbce3ba826db39cdc16b4feeb9f8c42f3299",
+   "bytes": 3563,
+   "lines": 128,
+   "step": "foundation",
+   "kind": "required"
+  },
+  {
+   "path": "lib/utils.ts",
+   "sha256": "7a3fce73cc57885aa70cc99b6c364027794a0cfb3351c1d19c30e7508810d92e",
+   "bytes": 5341,
+   "lines": 151,
+   "step": "foundation",
+   "kind": "required"
+  },
+  {
+   "path": "next-env.d.ts",
+   "sha256": "1862ac4bbbc5192d4bf562161df66ea547ed3e67173100656ab606ae9797db2b",
+   "bytes": 288,
+   "lines": 7,
+   "step": "foundation",
+   "kind": "optional"
+  },
+  {
+   "path": "next.config.ts",
+   "sha256": "71c580aeb5e403b9463b36f22544473da82d2b40f123d4e4ad9425171ddef040",
+   "bytes": 281,
+   "lines": 10,
+   "step": "foundation",
+   "kind": "required",
+   "merge": true
+  },
+  {
+   "path": "package-lock.json",
+   "sha256": "6bc78dd30cd49ec6a99398173922e51e83baf0c6c5e72b8997d6fbf74fe58dbd",
+   "bytes": 387079,
+   "lines": 11114,
+   "step": "foundation",
+   "kind": "optional",
+   "merge": true
+  },
+  {
+   "path": "package.json",
+   "sha256": "ffc8bb5372d81c2bdd5396c7424581d4fc71526379a1f9d52dac3a91e2d96c0f",
+   "bytes": 2033,
+   "lines": 67,
+   "step": "foundation",
+   "kind": "required",
+   "merge": true
+  },
+  {
+   "path": "postcss.config.mjs",
+   "sha256": "693c687bb5f75750d38e6664b9f613ae5dc35d04164ade30082d86c6fbca8f44",
+   "bytes": 62,
+   "lines": 3,
+   "step": "foundation",
+   "kind": "required",
+   "merge": true
+  },
+  {
+   "path": "tsconfig.json",
+   "sha256": "5298bdee533fa8dfba0e1d7bb399761cad06754092939ff4e9c651db837ddaad",
+   "bytes": 870,
+   "lines": 27,
+   "step": "foundation",
+   "kind": "required",
+   "merge": true
+  },
+  {
+   "path": "app/api/conversations/[id]/route.ts",
+   "sha256": "5ee5a9f1e67dd52ece022a6cb49c5b8a705d99560da335ac14293e4621f1f23e",
+   "bytes": 5514,
+   "lines": 108,
+   "step": "server",
+   "kind": "required"
+  },
+  {
+   "path": "app/api/conversations/route.ts",
+   "sha256": "d4b8d562f8216dc4b15d406e4dd2fb6c3a9c2d1d0048d0ca57f64dd50b0e552d",
+   "bytes": 3967,
+   "lines": 86,
+   "step": "server",
+   "kind": "required"
+  },
+  {
+   "path": "db/index.ts",
+   "sha256": "f292677237da21c81f94a2dae71afb0117bbd402025f6995a18e18ceeea86d7d",
+   "bytes": 3451,
+   "lines": 86,
+   "step": "server",
+   "kind": "required"
+  },
+  {
+   "path": "db/schema.ts",
+   "sha256": "3d5e02a9f65b8126b2c26d8bdee48436f866db1d26fe34f92363c73e8a25f860",
+   "bytes": 2497,
+   "lines": 57,
+   "step": "server",
+   "kind": "required"
+  },
+  {
+   "path": "lib/basic-auth.ts",
+   "sha256": "f12491189b5b13650e9bf26646180da35cee8bd3e0f6122682d814184ec4df5a",
+   "bytes": 2401,
+   "lines": 57,
+   "step": "server",
+   "kind": "required"
+  },
+  {
+   "path": "lib/chat-messages.ts",
+   "sha256": "06ebde8e1d7f36e7f831b0c256794a1ab134d56b5ccc0354e0a1ae977a63142a",
+   "bytes": 22289,
+   "lines": 532,
+   "step": "server",
+   "kind": "required"
+  },
+  {
+   "path": "lib/http.ts",
+   "sha256": "0d583189c4a5aa5a076fc9adbb4144053b1b0075c585c4f5e191c6b7809e49d8",
+   "bytes": 2694,
+   "lines": 51,
+   "step": "server",
+   "kind": "required"
+  },
+  {
+   "path": "lib/models/page.ts",
+   "sha256": "9e331b8c88ec100ca2a256b60b8388a17401853c4499c899517d847c0f4c257a",
+   "bytes": 1937,
+   "lines": 38,
+   "step": "server",
+   "kind": "required"
+  },
+  {
+   "path": "lib/rate-limit.ts",
+   "sha256": "21a41b7a890fab69ea4cfe56f8dfe154872f859faff762cb808fff9d56c54351",
+   "bytes": 4402,
+   "lines": 121,
+   "step": "server",
+   "kind": "required"
+  },
+  {
+   "path": "lib/retry.ts",
+   "sha256": "7dae608db3cfb79ecf2fb5acaf55a0d5113272f1991641f992fec8df6f9455a7",
+   "bytes": 4237,
+   "lines": 114,
+   "step": "server",
+   "kind": "required"
+  },
+  {
+   "path": "proxy.ts",
+   "sha256": "60e8182348cd6d93b4d73d458e51b8ef80586bd40ae54f6bc9ecdc0c7f649753",
+   "bytes": 5631,
+   "lines": 129,
+   "step": "server",
+   "kind": "required"
+  },
+  {
+   "path": "tests/unit/basic-auth.test.ts",
+   "sha256": "74f10f3f3ba94291363df256e95216852cf6ee9d8c35ae627560a10d03194228",
+   "bytes": 7835,
+   "lines": 168,
+   "step": "server",
+   "kind": "required"
+  },
+  {
+   "path": "tests/unit/register.mjs",
+   "sha256": "aa27958e8950f06c3db200eb8c7675ca3518556d8a51e6bfcf1f2d29e7f328d8",
+   "bytes": 1787,
+   "lines": 38,
+   "step": "server",
+   "kind": "required"
+  },
+  {
+   "path": "tests/unit/server-lib.test.ts",
+   "sha256": "65198511294a31e02e1e565b2c9518889dd9ede530cda095bf8eb9cd9b3c8236",
+   "bytes": 20158,
+   "lines": 413,
+   "step": "server",
+   "kind": "required"
+  },
+  {
+   "path": "app/api/chat/route.ts",
+   "sha256": "8e3df99e00cd84ef17cc8f7340e14daf09fde6e608cf9e8e357fd93760d1fbfc",
+   "bytes": 10814,
+   "lines": 274,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "app/api/models/route.ts",
+   "sha256": "06429f60553f69b97bfaa7fa51478004817c11f31218266f8bb2d8b932d6110a",
+   "bytes": 2110,
+   "lines": 39,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "lib/mock.ts",
+   "sha256": "9e3531a34cad6d38ace2f1b35c6a05c02bf41a1aa6fcbeadfe1729bfceb4cb55",
+   "bytes": 29999,
+   "lines": 613,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "lib/openai.ts",
+   "sha256": "ac24796562aa7edefc7c220fb36612903f320f158a8bf47ce6e93834c215fee6",
+   "bytes": 9593,
+   "lines": 256,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "lib/router/anthropic.ts",
+   "sha256": "351695f3461d7617fdcb95734b45b38576e50b707e15b5c5815b1f4075b1ce11",
+   "bytes": 6065,
+   "lines": 156,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "lib/router/catalog.ts",
+   "sha256": "e45d7c3cc72d4084ae446c923b46acf2ad4857d79f298c5ed892bfa56ab0c413",
+   "bytes": 10886,
+   "lines": 263,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "lib/router/env.ts",
+   "sha256": "e28caa48e393781e74c943827af4a206995d40b2b1fdb0e5d92db77b0ae2ccb5",
+   "bytes": 4155,
+   "lines": 100,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "lib/router/godmode.ts",
+   "sha256": "628da30117b37da386e1d3ebe704cb101674d983401818190e94a088277d9cce",
+   "bytes": 9765,
+   "lines": 196,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "lib/router/health.ts",
+   "sha256": "a552975481e49a174915d3d6560111fbe0b36e833e138903d1ce610d5e9bf480",
+   "bytes": 3347,
+   "lines": 83,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "lib/router/index.ts",
+   "sha256": "54a139dd83be90b6c487dcb5a38f0a47b33f46d25961322294ed3c53d5d034fe",
+   "bytes": 6694,
+   "lines": 139,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "lib/router/planner.ts",
+   "sha256": "37808868f108d4cb9eb1aa60c82351731416aadcf56a550efd00a3e34801c79b",
+   "bytes": 13386,
+   "lines": 278,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "lib/router/profiles.ts",
+   "sha256": "d3035c25d75ac778a24938909b06c7ee2f465d038ae75fef5aa4d39457992665",
+   "bytes": 13219,
+   "lines": 302,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "lib/router/provider-defs.ts",
+   "sha256": "98ac70fa3482e8b25267e8cda29667dd7f1ba14bdb579f95d463e914f5ceb5f1",
+   "bytes": 7114,
+   "lines": 195,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "lib/router/providers.ts",
+   "sha256": "59bd21f842553416bef37e56ded9c133c97468095938979e1bb9f33bc4521093",
+   "bytes": 3119,
+   "lines": 65,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "lib/router/router.ts",
+   "sha256": "e5e56d576a6a8027edc23818d10cfa1d48300fbb963af7c827571c34679171b7",
+   "bytes": 9092,
+   "lines": 217,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "lib/router/web.ts",
+   "sha256": "f6174a6a5d07ecf4e3421845564ab4f05cb48029ad7d71f29fea325cf78d2cc2",
+   "bytes": 6491,
+   "lines": 150,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "lib/sse.ts",
+   "sha256": "d9bb55c3de6c42e74522be967f76f9fa20d194bb86e4988e565b601bba94b97e",
+   "bytes": 1948,
+   "lines": 64,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "tests/unit/helpers/fake-provider.ts",
+   "sha256": "f00f610cce59356279d1b996d9c3f8ba193759baf646b9e31bc7833ad59330da",
+   "bytes": 5403,
+   "lines": 142,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "tests/unit/router-pure.test.ts",
+   "sha256": "29d4497b970dc6220927bbf5dba94313957224b386baf32ba19c71c23108b863",
+   "bytes": 27324,
+   "lines": 520,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "tests/unit/router.test.ts",
+   "sha256": "c12a96f0dc823fa3d57e131e31c2c93fe57775412cee5f82e5cb2fc6be10f239",
+   "bytes": 21779,
+   "lines": 438,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "app/artifacts/page.tsx",
+   "sha256": "e0498197ec77e0163826e03203f62545241c2c58e66c8ac85cd257c46d7ef8e2",
+   "bytes": 209,
+   "lines": 8,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "app/chat/[id]/page.tsx",
+   "sha256": "91c1ba70023e02f33dbdf33670ee244aa565f646fa9182bb1c524ad0c3f5674f",
+   "bytes": 194,
+   "lines": 6,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "app/chat/page.tsx",
+   "sha256": "b9514e222fe4b0a0a33b521cc8c882d2311d6d37e379c1dc6b2445560e8a431f",
+   "bytes": 289,
+   "lines": 9,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "app/globals.css",
+   "sha256": "45ad92f50b6994cc4f65233af8bdd96e3c23f9a6a98d956a27452f33c606b50b",
+   "bytes": 18166,
+   "lines": 514,
+   "step": "interface",
+   "kind": "required",
+   "merge": true
+  },
+  {
+   "path": "app/icon.svg",
+   "sha256": "5601ed57d90aad152be36712eebfca3aee7643ba8492bbceef522855457b7cd0",
+   "bytes": 271,
+   "lines": 1,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "app/layout.tsx",
+   "sha256": "153f04dbf7e9264627620cd310ddca47d974459b5eb31613535fb2a76d243871",
+   "bytes": 1253,
+   "lines": 37,
+   "step": "interface",
+   "kind": "required",
+   "merge": true
+  },
+  {
+   "path": "app/not-found.tsx",
+   "sha256": "74074796faaec4620ea766afe3352b7c9d1451b2e78f503468569653139649c6",
+   "bytes": 500,
+   "lines": 13,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "app/page.tsx",
+   "sha256": "93394abcdbd4397cc9c9b1c036f1f7a903aa8d1eaa74594460d77f19f499c0ca",
+   "bytes": 138,
+   "lines": 6,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "app/projects/[id]/page.tsx",
+   "sha256": "30c74797b0ea5ab90eeb8fdd7dad0acbd646f088b07f1dffe479b5082aaa1d78",
+   "bytes": 112,
+   "lines": 5,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "app/projects/page.tsx",
+   "sha256": "660d0ed1eb825a4ff9cc0da4cee78587be39f5728458477ffbfa4f166ad4ef88",
+   "bytes": 206,
+   "lines": 8,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/app-header.tsx",
+   "sha256": "c5adc2e3e690feb9f40e564dba084057cd8cf7c855a70e5278771619a97eb555",
+   "bytes": 6771,
+   "lines": 166,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/app-sidebar.tsx",
+   "sha256": "47042802cb1867bab8f8298325abf5a94bab19d67d7c3943c3d62fc1d3696d89",
+   "bytes": 13367,
+   "lines": 326,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/artifact-card.tsx",
+   "sha256": "7ced7fea286737c9433ecbf7b4054b6565da22e4dcf28f15ddc74f8db9c6f603",
+   "bytes": 2700,
+   "lines": 62,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/artifact-panel.tsx",
+   "sha256": "bc354f494ff3500eeb48c52597af905e31b8cf8bd09348328fd4e36e4d48b83c",
+   "bytes": 8325,
+   "lines": 196,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/artifact-view.tsx",
+   "sha256": "8b17d67e8dbde0f6c8150f287493758538e3f8e2f47ae2e5ec7369d5b21cc524",
+   "bytes": 3064,
+   "lines": 76,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/brand.tsx",
+   "sha256": "7547b40cdb0a42c80cdb52968d29e05daee1876b61454e30c953a290a278defb",
+   "bytes": 837,
+   "lines": 24,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/chat-view.tsx",
+   "sha256": "5be78e1c680c6464e3107541aaa1e78cc0a453a5e435e8e7a3918bc956c2a21e",
+   "bytes": 4774,
+   "lines": 130,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/cipher-disk.tsx",
+   "sha256": "b8aed7f763b0fbca48affdd80aafe0c58dfd0066417b5b57c5ad419fba620c2b",
+   "bytes": 3057,
+   "lines": 79,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/code-block.tsx",
+   "sha256": "e74ecd89948df49f23f96fa51d86337276db340657b90554f225dfd30f4d9a19",
+   "bytes": 4025,
+   "lines": 98,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/command-palette.tsx",
+   "sha256": "8a1fef9fd36e5de74c06e8ce1fc16fa82e9f442df8344ed7fe83c4c9bfb3ea08",
+   "bytes": 4679,
+   "lines": 114,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/composer.tsx",
+   "sha256": "2fa69c1cd556362f9aa6a6d8a8df7056d3daf0dec1099568c0ef73f8b11a4f94",
+   "bytes": 16735,
+   "lines": 426,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/dialogs.tsx",
+   "sha256": "a9093e823c9a0ccdea81f87f187abbf489e9526b7ad3f21b7004b774fd7b1bc5",
+   "bytes": 7069,
+   "lines": 183,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/home.tsx",
+   "sha256": "1983126ef6ae7ad32ea35ee12376122b613017cc76d6ec76911306576da5e8c0",
+   "bytes": 5917,
+   "lines": 137,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/icon-button.tsx",
+   "sha256": "ed722f8fa5846e1e33c49cbf38b78b91731a15b741db138b11f9663daaf887ea",
+   "bytes": 1530,
+   "lines": 41,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/keys.tsx",
+   "sha256": "f967bf749c7a0645ffade631394ed3271fdaaf20c652b79777a0faa2391952c9",
+   "bytes": 396,
+   "lines": 14,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/markdown.tsx",
+   "sha256": "4cc2741330a7a3cc18b5c9bc23acdd93c724ca582ff8f05539a2f957e1f6b663",
+   "bytes": 2148,
+   "lines": 53,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/message.tsx",
+   "sha256": "138cf111cfa42f1348ced9d624c6fc92603d3060e9508eda5fb6cc2ab5a8cda4",
+   "bytes": 13907,
+   "lines": 345,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/model-library.tsx",
+   "sha256": "b2530fec0ff2848e0049a056ee48016cf276991fde556d1e04be5eb8bb311f95",
+   "bytes": 10234,
+   "lines": 198,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/model-parts.tsx",
+   "sha256": "2fe7b6468a4136e75c80ad978d97c9d3e17067fe678a417ae0ed464af87b5d9e",
+   "bytes": 4119,
+   "lines": 96,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/model-picker.tsx",
+   "sha256": "cb4c59e7e743db95dc6db573fc03511c6e47da9bd7406c6ddc80da9481c5ca2c",
+   "bytes": 5891,
+   "lines": 128,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/pages.tsx",
+   "sha256": "09007a1d15774d777662668664632d2ee21a5b320fd17487f0263f4db52462b2",
+   "bytes": 26765,
+   "lines": 679,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/route-info.tsx",
+   "sha256": "a065cdec0041d836cfd1c758030702ebe6c725168da91ba93ee031281c7d075b",
+   "bytes": 8717,
+   "lines": 179,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/save-report.ts",
+   "sha256": "1c7bbba3d24f528d55a531a1141ae3dde2510e6bf76ca746ef1f0a115609879a",
+   "bytes": 539,
+   "lines": 13,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/settings/appearance.tsx",
+   "sha256": "6c6caef6336c05cf157e9904fa26e986534d0c60ac02889830622aeb69e584ae",
+   "bytes": 6823,
+   "lines": 133,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/settings/capabilities.tsx",
+   "sha256": "a07b3e0cc1cfdb794ad8d8e424eedfcc45b317ee427d340a9e05ffb301d8d882",
+   "bytes": 4217,
+   "lines": 117,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/settings/connectors.tsx",
+   "sha256": "af01d8ea7b5228859b4b06530487316dff7e637b662602e9f831f2df482e37af",
+   "bytes": 2149,
+   "lines": 53,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/settings/dialog.tsx",
+   "sha256": "52bd4d74707b83179cf98d373b9ef7eda6d47f4292e6e333ea4f62cb3dce04d0",
+   "bytes": 5936,
+   "lines": 110,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/settings/general.tsx",
+   "sha256": "725361a6f633d2dbbeb4f7f29aa2d063b088f5c11695def3294cb39b8c29a7e2",
+   "bytes": 1660,
+   "lines": 47,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/settings/model.tsx",
+   "sha256": "14bc599a923724bd7f1290b40c3d79f7a8b3a760a6203e79db86772f787831c1",
+   "bytes": 16110,
+   "lines": 381,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/settings/parts.tsx",
+   "sha256": "3670f89ebb698bb870dd4a6df0177a63dce497131b82a41b722c350aeb6b3d83",
+   "bytes": 4794,
+   "lines": 148,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/settings/privacy.tsx",
+   "sha256": "6d7b94f4f4d90838d33e9f97212f05872c974a7327514224cfe293c41b072c07",
+   "bytes": 8095,
+   "lines": 209,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/settings/router.tsx",
+   "sha256": "28d481601a27513c5dfee085b8b494063467ce06b5475e91fac7d90328f62bd7",
+   "bytes": 14388,
+   "lines": 270,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/settings/shortcuts.tsx",
+   "sha256": "0f65358f9f38d7dd5ee71b8c7d3fd1184799e10220ac34808677c210f7b6a5eb",
+   "bytes": 1860,
+   "lines": 49,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/settings/styles.tsx",
+   "sha256": "92a69a03a55f79f59d83270642256c767697e15cf384431b89a04bac0796d88b",
+   "bytes": 5225,
+   "lines": 121,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/settings/usage.tsx",
+   "sha256": "2510eda6399acc41e50954d2ea6a7c8835a7dbe240bb1b9913659966d4fdffee",
+   "bytes": 3416,
+   "lines": 85,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/shell.tsx",
+   "sha256": "f8523abc15a1b8162fb2f6293177b50074b59e7f88d4f3b8c970d2b5fa8d2c4e",
+   "bytes": 13703,
+   "lines": 366,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/thinking.tsx",
+   "sha256": "a1270da19886c09f3b8496dc1e42cd1a2669a570025c70e4046bd777a0bf9a43",
+   "bytes": 1658,
+   "lines": 38,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/accordion.tsx",
+   "sha256": "ca0e041a2cc115c48a9f6f6036ea174966f6f55e9195f8fdd7b97964a14f4f28",
+   "bytes": 2034,
+   "lines": 64,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/alert-dialog.tsx",
+   "sha256": "8f5322000f22857ced049ef862d3b46f7aebf325e257ff62744fe80ec8abda58",
+   "bytes": 5426,
+   "lines": 195,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/alert.tsx",
+   "sha256": "afeb8ee000195794ccffbf82ab1860bf083e61d355cbe1385fc6ad73fdecfae8",
+   "bytes": 1613,
+   "lines": 65,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/aspect-ratio.tsx",
+   "sha256": "20d3484410b50c52ef27039d18bb759f0d18f4287257d6297569849ae1b36082",
+   "bytes": 305,
+   "lines": 12,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/avatar.tsx",
+   "sha256": "6ac08e8171317472200a9c3158d848e88c3415922f14225d344cb1f1b58b3252",
+   "bytes": 2902,
+   "lines": 107,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/badge.tsx",
+   "sha256": "0311bb21a5dc8c1e3d70ffc35cccc375c90e2f08bb0f0dd943dad72c19ed45ff",
+   "bytes": 1775,
+   "lines": 47,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/breadcrumb.tsx",
+   "sha256": "279be96050d93ae561529491ac2a27b5a4d5289a73ed8997d8929b4f3d23d443",
+   "bytes": 2338,
+   "lines": 109,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/button-group.tsx",
+   "sha256": "7c861671c7df17a0c83e87e61cbafb5d94d0549f4cd2e8b5fe59af3d25135394",
+   "bytes": 2202,
+   "lines": 83,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/button.tsx",
+   "sha256": "453a74d6b22bbde8dcb4bf0656896bd32b6db0309b49f8c16d1a5ef17bf4a39d",
+   "bytes": 2690,
+   "lines": 64,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/card.tsx",
+   "sha256": "39480d5b63e46554f1cfcedaa91052c848bda5c45d7a5dda80fe91e7be604fb0",
+   "bytes": 1986,
+   "lines": 91,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/checkbox.tsx",
+   "sha256": "aecfe05949b0ff2cd31299d2e2c8bfa96e6cab5ffb9f893dbed3c804db65a239",
+   "bytes": 1200,
+   "lines": 30,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/collapsible.tsx",
+   "sha256": "76caadcfc2c0882c1e71a24690aac2d9aa2bef8f55b99d5ea96c40a9418e855c",
+   "bytes": 782,
+   "lines": 32,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/command.tsx",
+   "sha256": "bd15e9340e95df77fd812d502b31e1c211e46405b783fa42b37fa6533e4c9377",
+   "bytes": 4884,
+   "lines": 183,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/context-menu.tsx",
+   "sha256": "487dd1f3df1648446a63062ad09fa30464051c3f9d55938918f2019cbfc2f99f",
+   "bytes": 8254,
+   "lines": 250,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/dialog.tsx",
+   "sha256": "f1f69eaeb87bbafcdfd4d461bbb7b3e8b8d11a8b7d4195f302c742f8f8370ddf",
+   "bytes": 4395,
+   "lines": 157,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/drawer.tsx",
+   "sha256": "905f933e3b0849cfae8ce67225721804dfb6082704ea9dd2f1f210aea1fdaa70",
+   "bytes": 4241,
+   "lines": 133,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/dropdown-menu.tsx",
+   "sha256": "3e79437422d18b14a5a90b1131e17a6c2b894a8f4f908d5718bf4b67647ecf3d",
+   "bytes": 8404,
+   "lines": 255,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/empty.tsx",
+   "sha256": "a506c7665171485de08aa790d8d05c56f00bbf2b85175026f26686feda4bb514",
+   "bytes": 2395,
+   "lines": 103,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/form.tsx",
+   "sha256": "93c8fabf4851a68f5268f12792529b6543bd5e2fd14ebd16f051e674c50e3515",
+   "bytes": 3726,
+   "lines": 166,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/hover-card.tsx",
+   "sha256": "354a53c7125af614c5f5f4c12efe8c16450264e7a67e9cef765842d934b606ce",
+   "bytes": 1512,
+   "lines": 42,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/input-group.tsx",
+   "sha256": "490961980a0ad03674810bdb5685742cfb51079898850601ab55d28c78c36416",
+   "bytes": 5052,
+   "lines": 169,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/input.tsx",
+   "sha256": "72c28312b225fc34fd2ec4e9dee08605e312e04b6cbd66053ac5186e79c960c1",
+   "bytes": 994,
+   "lines": 20,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/kbd.tsx",
+   "sha256": "6088c3a5432338b1719c17e9b5d0e1fa74fd1f66060f248fc88909d33a82cd13",
+   "bytes": 862,
+   "lines": 28,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/label.tsx",
+   "sha256": "7c38fc7769505858aab2821f0a430e168ece1d4ae7e1d8e09497bb8d94470624",
+   "bytes": 592,
+   "lines": 22,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/menubar.tsx",
+   "sha256": "7e1b086ad051519e5748fc47d23646ea31029191c7b30001afce2d069b1fe627",
+   "bytes": 8303,
+   "lines": 276,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/navigation-menu.tsx",
+   "sha256": "0c4158a7a690a82f3a342790cec8fa903605f0efab99e9b441e6fc8069fec252",
+   "bytes": 6650,
+   "lines": 168,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/popover.tsx",
+   "sha256": "58beec6b289ebdc0e44724003345540e85462fc1a1f7bdb29626966e9444f103",
+   "bytes": 2343,
+   "lines": 87,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/progress.tsx",
+   "sha256": "75cbdcfc8777f19fa3610124c335e025db4765a1a953104a263e9389441c312d",
+   "bytes": 721,
+   "lines": 29,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/radio-group.tsx",
+   "sha256": "785d0ac01d9a4b92a78d26003baa5b96bf67e20a3ed19edd11567d0edea33d4b",
+   "bytes": 1446,
+   "lines": 43,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/resizable.tsx",
+   "sha256": "9722bcd3c9e85c07a68f719fba1548f70b611f9336181f1f4b8db0b60eeaa6a7",
+   "bytes": 1801,
+   "lines": 51,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/scroll-area.tsx",
+   "sha256": "2222cf057c257649248fbf433e052acc5a3ca661faa86b135c2de3da8fd57262",
+   "bytes": 1625,
+   "lines": 56,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/select.tsx",
+   "sha256": "6af857f87cb0ff49b1d60e99bcb4f4107c00111d8af0bf655322379347a2ac87",
+   "bytes": 6339,
+   "lines": 188,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/separator.tsx",
+   "sha256": "d6287364990c48a6893a1f94c6392b9564f2091000d2451578adbbb41dd2564f",
+   "bytes": 680,
+   "lines": 26,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/sheet.tsx",
+   "sha256": "e87b92bfe741af73dbf77bce54f5dc7ff00c86ce2eb259219cbb97c7cecea412",
+   "bytes": 4279,
+   "lines": 141,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/sidebar.tsx",
+   "sha256": "718441093f6ed4392de6628dabd6ea009f90e656ba29343e55640116d8e1f55b",
+   "bytes": 21901,
+   "lines": 732,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/skeleton.tsx",
+   "sha256": "ba48dd5be5a6a1378bd4e011028654b5bf419f1e7d20ee4b9f8330c1264e7239",
+   "bytes": 276,
+   "lines": 13,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/slider.tsx",
+   "sha256": "0ca7f9789b05fb41a12db4b94eaba703a485c8241c3cd77d84fc9f7852e8a078",
+   "bytes": 2189,
+   "lines": 64,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/sonner.tsx",
+   "sha256": "c1ab29b69d3a8b281de47dc9593aae8948fae81134b8b3c2e29a6c414cf8adfc",
+   "bytes": 989,
+   "lines": 35,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/spinner.tsx",
+   "sha256": "d07526a2f821962529e09e3b8dd55123eec0c753cced3983f8e1cbafcec7a737",
+   "bytes": 330,
+   "lines": 15,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/switch.tsx",
+   "sha256": "3431733589e4c331b79d898237fe8ced9f0fe2bffcb63dae64acaa1331578cb7",
+   "bytes": 1555,
+   "lines": 33,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/table.tsx",
+   "sha256": "cf65cec1e11b263e994c08f14714cacc32ed88e3c7354da56824a6b4579b945f",
+   "bytes": 2448,
+   "lines": 116,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/tabs.tsx",
+   "sha256": "0c8baec0a5e518b740582f547ed9d1c52fd179a61d52f891de8062dfb23edc64",
+   "bytes": 3768,
+   "lines": 89,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/textarea.tsx",
+   "sha256": "25352588ff3054fe0e2555214f7a83bf6f98bb00853de418b883d8cd9f0213c4",
+   "bytes": 783,
+   "lines": 17,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/toast.tsx",
+   "sha256": "7d93d12a0b41363488a4f7e414efc1c354f91463a4d370fd5b1ff9dff807874b",
+   "bytes": 4355,
+   "lines": 139,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/toggle-group.tsx",
+   "sha256": "55f6104850f0c6e32d6086c241b5b0920679922a3f775ab840a832e6f9c7eb52",
+   "bytes": 2295,
+   "lines": 82,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/toggle.tsx",
+   "sha256": "a1043589c799409288595a6cc4985615eb0938e60a231a81aaa192e3cfb98e93",
+   "bytes": 1551,
+   "lines": 45,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/ui/tooltip.tsx",
+   "sha256": "3d4f06251228b2a9ffb8176510f8548dbaef680efb3a98d8a6ac3c5f387a333f",
+   "bytes": 1816,
+   "lines": 55,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/actions.ts",
+   "sha256": "7528595ad5085f27208349287c7a3e71748d8b5f00386370e42089d710b91aa3",
+   "bytes": 5817,
+   "lines": 144,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/catalog.ts",
+   "sha256": "3d8b20a81fad97e838547514001174ef48c693003aec28a841a76503c9b1f2e3",
+   "bytes": 5389,
+   "lines": 131,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/defaults.ts",
+   "sha256": "a507e503ab71773b261769f7c74522c9313747391648c9728cfb72c0787c31c2",
+   "bytes": 3931,
+   "lines": 138,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/export.ts",
+   "sha256": "1d03ff8f9e4683bfb633cb88b9aab0ca8dfc043d8bd53d3dced2bdc2a43895ea",
+   "bytes": 2253,
+   "lines": 58,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/files.ts",
+   "sha256": "758bac9f4b00e43c82a58531bba4f28f3024aabe4b31a24c1b248a0f75b7ed0d",
+   "bytes": 2117,
+   "lines": 64,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/hooks/use-media.ts",
+   "sha256": "df54d7c73ce3d56fca3cc19e5d23552b004843a75a8d0a5f73ddec0bebee6108",
+   "bytes": 718,
+   "lines": 22,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/hooks/use-mobile.ts",
+   "sha256": "894350381ca7cde13f4c4fa27db1e31f61619f000405044b866004cc448d83c3",
+   "bytes": 688,
+   "lines": 20,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/hooks/use-stick-to-bottom.ts",
+   "sha256": "f0949217ff9675d0583fd5f9edf45364e168ed6946b1e61f8a649cd053de544d",
+   "bytes": 1924,
+   "lines": 59,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/import.ts",
+   "sha256": "4abda6b095030b8cf879a3764b1f4da1e6737c062ac9eb11ca3c85bd674a1deb",
+   "bytes": 6420,
+   "lines": 153,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/motion.ts",
+   "sha256": "0b3f5f4faa6da556bfa2e47fe5055989bb46c4e1a00ce35d57feca59acf0f94f",
+   "bytes": 1774,
+   "lines": 53,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/no-flash.ts",
+   "sha256": "05c80bf28c3d9798d153d79bb5b56c292cdeca7ee6cd1abc977c966f22b0b1c9",
+   "bytes": 919,
+   "lines": 21,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/parse.ts",
+   "sha256": "c71224c7be165ec19035e1a646973dbaf6a2354f7c452701c8849e26deba16cb",
+   "bytes": 6429,
+   "lines": 212,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/prompt.ts",
+   "sha256": "1c4be5556f333702b4c1654ec1a144242708da352589df2e8e0d8b4b61b28648",
+   "bytes": 2124,
+   "lines": 58,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/provider.ts",
+   "sha256": "84f3e2dd31695abe12cfc60b8a84bafb4628e55965e7176e8d2f2e34a07e31a5",
+   "bytes": 6447,
+   "lines": 164,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/route.ts",
+   "sha256": "9a7879a8da8c7ca4c6c2675c19f0ddbc204de50535d88747a65fdfa3dcf9b42c",
+   "bytes": 2210,
+   "lines": 73,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/sample-catalog.ts",
+   "sha256": "49cb5e2b166aaf81e9465fce23b65b64447677109693690352820ed22e02c299",
+   "bytes": 7924,
+   "lines": 179,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/store.ts",
+   "sha256": "45bbfeeca59284ad27bfafc61e082df0311838fd43345348298d3a3215149d64",
+   "bytes": 15786,
+   "lines": 438,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/sync.ts",
+   "sha256": "a9a61fc69f3238cd0e35231405d314fa04fae9e1d485d31c048bc3224542fa96",
+   "bytes": 6031,
+   "lines": 182,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/theme.ts",
+   "sha256": "6bfca4148e22d9db75d8c1d72d33686fd41d88013494ef5b6fa78ac94a44553d",
+   "bytes": 3625,
+   "lines": 101,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/ui.ts",
+   "sha256": "abfbe90faf6d7f72a3394d9a26a0dcb79580eee987cf5f0740615905845a511d",
+   "bytes": 3777,
+   "lines": 119,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "tests/unit/import.test.ts",
+   "sha256": "2555dbd9cfdb8dd3e3b66bd35ebcb045a4b6bccc6732e5eae56ec1e9bec23c54",
+   "bytes": 5685,
+   "lines": 147,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "tests/unit/sample-catalog.test.ts",
+   "sha256": "22efa52676e7ac774b2dff004ea64c1539b9f7d7040e4b8f6811c1e96416b817",
+   "bytes": 9514,
+   "lines": 203,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "tests/unit/save-file.test.ts",
+   "sha256": "e011f8db1a169f2b916c0bb487a08b31583fc368ad238da6572a5e9616748235",
+   "bytes": 4940,
+   "lines": 122,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "playwright.config.ts",
+   "sha256": "b0bf3afe6c7d01a34a1bd202b544825121d18b3a41061b4d1a3e0f14d3ecbaa1",
+   "bytes": 2474,
+   "lines": 59,
+   "step": "e2e",
+   "kind": "required"
+  },
+  {
+   "path": "tests/e2e/a11y.spec.ts",
+   "sha256": "1910ca8324c0b8d6efc2d1246f4689cf829ca30933f5996265ba8ad59c6b09ff",
+   "bytes": 2034,
+   "lines": 54,
+   "step": "e2e",
+   "kind": "required"
+  },
+  {
+   "path": "tests/e2e/app.spec.ts",
+   "sha256": "d2b85fca23f90dac18296d89c4116157300ddfe40926c86bf636923442d550a5",
+   "bytes": 10766,
+   "lines": 266,
+   "step": "e2e",
+   "kind": "required"
+  },
+  {
+   "path": "tests/e2e/fake-llm.mjs",
+   "sha256": "a92f340daa72cf23ee1693ceabd061b88c45d7ad5977de19a68b186df98f6e9f",
+   "bytes": 5023,
+   "lines": 125,
+   "step": "e2e",
+   "kind": "required"
+  },
+  {
+   "path": "tests/e2e/helpers.ts",
+   "sha256": "c953fb4c5e31c61e31f70523fee1fa1c909610d213196f1c3cb61ed246ad9c47",
+   "bytes": 5709,
+   "lines": 125,
+   "step": "e2e",
+   "kind": "required"
+  },
+  {
+   "path": "tests/e2e/router.spec.ts",
+   "sha256": "c4bc043d8aeff2b68bf995899f574755e52e89966f5d0bed84d51eb76d208593",
+   "bytes": 30139,
+   "lines": 572,
+   "step": "e2e",
+   "kind": "required"
+  },
+  {
+   "path": "tests/e2e/servers.mjs",
+   "sha256": "ef3494b2e173ed69eb91b4623ddb6fe0fc7a6d685d960f5c710a3162a8c3f79e",
+   "bytes": 4609,
+   "lines": 104,
+   "step": "e2e",
+   "kind": "required"
+  },
+  {
+   "path": "DESIGN.md",
+   "sha256": "a33219ef0c1a4264262cba0310057072da9c0a86c20c7cdd045a6f10a718142d",
+   "bytes": 29565,
+   "lines": 385,
+   "step": "docs",
+   "kind": "optional"
+  },
+  {
+   "path": "README.md",
+   "sha256": "7d3cf0e42e27b8a1d167e38fcb3f6e11c575d427b5ba4e17642bd6337b19bfd7",
+   "bytes": 17014,
+   "lines": 224,
+   "step": "docs",
+   "kind": "optional"
+  },
+  {
+   "path": "TOOLKIT.md",
+   "sha256": "0df4690ede999413e2217cb9f6c9a19aa17ae61a1a9ec600d0567b149584a573",
+   "bytes": 9999,
+   "lines": 77,
+   "step": "docs",
+   "kind": "optional"
+  },
+  {
+   "path": "file-tree.txt",
+   "sha256": "842b610e71b731c2c357da3c04f3450a33d0c1bd72c0edde93b79cc7a0aaa376",
+   "bytes": 1103079,
+   "lines": 14671,
+   "step": "docs",
+   "kind": "optional"
+  },
+  {
+   "path": "scripts/file-tree.mjs",
+   "sha256": "deb21e57b50beb5bdef67c399b7f68838159c38579b3f9efb62e3b6d260dd3f0",
+   "bytes": 12529,
+   "lines": 317,
+   "step": "docs",
+   "kind": "optional"
+  },
+  {
+   "path": "preview/index.html",
+   "sha256": "aceae9001c8833f88b9372e64804f13d093b4555028ddf3be961ad3644e8be0f",
+   "bytes": 1344,
+   "lines": 23,
+   "step": "preview",
+   "kind": "optional"
+  },
+  {
+   "path": "preview/main.tsx",
+   "sha256": "8174a8e0f2adc3487a0b2e7a6db373b657b7d6d716afce5f11e8df3a15f78bd8",
+   "bytes": 1664,
+   "lines": 50,
+   "step": "preview",
+   "kind": "optional"
+  },
+  {
+   "path": "preview/preview.css",
+   "sha256": "63511efb98b4bebb1b13ea6d1186be95296250df6c08bb462140d0d2fc6f4716",
+   "bytes": 639,
+   "lines": 18,
+   "step": "preview",
+   "kind": "optional"
+  },
+  {
+   "path": "preview/shims/link.tsx",
+   "sha256": "b838a50dc3f54fa7e346918c15b166408560f9463fcef52a220ef3474d37a933",
+   "bytes": 556,
+   "lines": 15,
+   "step": "preview",
+   "kind": "optional"
+  },
+  {
+   "path": "preview/shims/navigation.ts",
+   "sha256": "4b5358fb3ea88818d5e95442e4d71426e9181a6180b02087b83f6efe5eb54a21",
+   "bytes": 1300,
+   "lines": 46,
+   "step": "preview",
+   "kind": "optional"
+  },
+  {
+   "path": "preview/vite.config.ts",
+   "sha256": "82b11b1e890bb5c86ab8cbb92372d0c985b7c9db445c9fca322c5f465d1c8012",
+   "bytes": 1169,
+   "lines": 29,
+   "step": "preview",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/banner-design/SKILL.md",
+   "sha256": "913d9c4b2a3b405d638d50131e0dd3fe2787c839423d79287b7858ac29255acc",
+   "bytes": 8326,
+   "lines": 196,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/banner-design/references/banner-sizes-and-styles.md",
+   "sha256": "c8906fb1073a576ee8c680d9bc8586249cbc4ed36690da960d65a1c9c37143b7",
+   "bytes": 4993,
+   "lines": 118,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/brand/SKILL.md",
+   "sha256": "6a450ee1a83a403d47cec2ede9030feb60a67a81fc425d2406e975339313bd44",
+   "bytes": 2939,
+   "lines": 97,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/brand/references/approval-checklist.md",
+   "sha256": "4bf8549687f53a7b9684005b4b87de93c26f018e00609b4c506a5812abd13d20",
+   "bytes": 4245,
+   "lines": 169,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/brand/references/asset-organization.md",
+   "sha256": "de98123417e9c5a1cc71a78131bba979c4c8ed2e5289e6c7a7f166576e488101",
+   "bytes": 5110,
+   "lines": 157,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/brand/references/brand-guideline-template.md",
+   "sha256": "392db8cf10fef492221c15a86e68590074bf5716de1f2982f41c01fbe30567cc",
+   "bytes": 3572,
+   "lines": 140,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/brand/references/color-palette-management.md",
+   "sha256": "c429298ffe3955edb8b22c9f51426fef75e83d02848cd4300e89c0d3fc34b44a",
+   "bytes": 4254,
+   "lines": 186,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/brand/references/consistency-checklist.md",
+   "sha256": "56d8b2d4852cda11e600adec4b9dd68fc89a1b8265382359953bec5c5e5e2c36",
+   "bytes": 1926,
+   "lines": 94,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/brand/references/logo-usage-rules.md",
+   "sha256": "044c5ddf30cfe0eea047451cfce6ea654939198ffdd8968a19161c97066a5a26",
+   "bytes": 5464,
+   "lines": 185,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/brand/references/messaging-framework.md",
+   "sha256": "24b2500a72867b55dd10f4bf359178b0eb347fddd852659ce47b69d9f597d4e6",
+   "bytes": 1763,
+   "lines": 85,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/brand/references/typography-specifications.md",
+   "sha256": "921c3d9e6ddfde2677b9a3e32eee94c7922f54f22c1f380c5ed2eb25a7d5bfa9",
+   "bytes": 5042,
+   "lines": 214,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/brand/references/update.md",
+   "sha256": "537cb55ebe260e1de127bd6288b19d8d7b15b6c893545442a58b739cbd342b37",
+   "bytes": 3365,
+   "lines": 118,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/brand/references/visual-identity.md",
+   "sha256": "63f0cfc5d95403d8e12aca4d839cc28471515574d9a431334bfbb96c15407c31",
+   "bytes": 1884,
+   "lines": 96,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/brand/references/voice-framework.md",
+   "sha256": "08c15ac79f81cd964c5efbe593131b61a093c7e1b060d5dd28b17f3cc5b331fb",
+   "bytes": 1997,
+   "lines": 88,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/brand/scripts/extract-colors.cjs",
+   "sha256": "36d21f3905e5762cfc8054b3f3b7276f6bc656884fe57c6bfa539526044778ed",
+   "bytes": 9328,
+   "lines": 341,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/brand/scripts/inject-brand-context.cjs",
+   "sha256": "5b98abdeb5c636f247102cd235f1d3421db7a4de53fd853360feaa0c471b5c96",
+   "bytes": 9677,
+   "lines": 349,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/brand/scripts/sync-brand-to-tokens.cjs",
+   "sha256": "390a760570fdba6d6ecfdfd8907fc802b64659b6178f8920349b0c6a2c822106",
+   "bytes": 9545,
+   "lines": 248,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/brand/scripts/tests/test_sync_brand_to_tokens.py",
+   "sha256": "0ace0cf7c6a8c12c0b9154f317e847b1084eb00b065b6f22431e37b7c7e948d6",
+   "bytes": 1970,
+   "lines": 52,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/brand/scripts/validate-asset.cjs",
+   "sha256": "4546c9109fb0f4f767426508cb29e60d02b301f8897cf16d8e378b7ce9d997fc",
+   "bytes": 10173,
+   "lines": 387,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/brand/templates/brand-guidelines-starter.md",
+   "sha256": "d157a57b15f0b458c79636d11de42f3c89f03d8c0bbea1bdd3cf1c3542b2140d",
+   "bytes": 6638,
+   "lines": 275,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/SKILL.md",
+   "sha256": "655468bb723a6bc9d17fcb09a6a005e10e313d63b879f4d74fb2abdc3041ae3f",
+   "bytes": 6875,
+   "lines": 244,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/data/slide-backgrounds.csv",
+   "sha256": "d1bb701b87bef493d72974d6fac1087c8ba4e2df14185fe3e0c36a13fe35f3d1",
+   "bytes": 1038,
+   "lines": 11,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/data/slide-charts.csv",
+   "sha256": "12ef876cd76e67a6553444bfa2ebf1d5d4d6216289d34db052a6e87421135033",
+   "bytes": 8631,
+   "lines": 26,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/data/slide-color-logic.csv",
+   "sha256": "ea68c737075f1615b2a7e461e2878c06bfe8f803dcabfbcc2977ffe5f9ec9ded",
+   "bytes": 877,
+   "lines": 14,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/data/slide-copy.csv",
+   "sha256": "43152937a0e598b3fbfdd418684311c105d44e3c5b333703ddb0b8cb28e40658",
+   "bytes": 6427,
+   "lines": 26,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/data/slide-layout-logic.csv",
+   "sha256": "26b5b75782d5aba89836c0479acd3111cc69b67853db9c2259b30ac1e966bc62",
+   "bytes": 981,
+   "lines": 16,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/data/slide-layouts.csv",
+   "sha256": "95d558c1b7d2552d7a75402dc68facbd16125e574985851db5729d1145e14896",
+   "bytes": 8760,
+   "lines": 26,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/data/slide-strategies.csv",
+   "sha256": "f656be0ab0b3a85fa7fc74202e9701a7236220412d67d5f63eb6dbb100bb2639",
+   "bytes": 8232,
+   "lines": 16,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/data/slide-typography.csv",
+   "sha256": "b96cd11dd4ff1dea8a9454b0b9e898e7f82f9243182f8f237af1f2c9b8824ce5",
+   "bytes": 735,
+   "lines": 15,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/references/component-specs.md",
+   "sha256": "b265d979a741dd748d4e595e6898ae430faeef4f6d13d7a634fa6241b91d2da4",
+   "bytes": 6914,
+   "lines": 236,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/references/component-tokens.md",
+   "sha256": "e27f8f5999badee425c98235eabbd2cb3ebe2a1a364766d5c7a6b3134ceaaec8",
+   "bytes": 4986,
+   "lines": 214,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/references/primitive-tokens.md",
+   "sha256": "91e6caa12646c08c8aadf8e09399aed65760a25c8d80595936d81a9131118fc3",
+   "bytes": 4562,
+   "lines": 203,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/references/semantic-tokens.md",
+   "sha256": "97e16d8061bbc22e82b51966a7015e3fc990932902e4647843506669a1cdebcc",
+   "bytes": 4245,
+   "lines": 215,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/references/states-and-variants.md",
+   "sha256": "8dacb95d57d4bb37d8a99cc55515ff26da272056f837d29abc74aedcaa3ba104",
+   "bytes": 4771,
+   "lines": 241,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/references/tailwind-integration.md",
+   "sha256": "6d01092db1479dbd2060567b4232bb2b4bc16e89730ab07e1f87a3e7f5c406b9",
+   "bytes": 5633,
+   "lines": 251,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/references/token-architecture.md",
+   "sha256": "925f4049c4c4313d9fd5df98cdfd52004112aca49fba1664ad85e76bc9dce4d3",
+   "bytes": 5365,
+   "lines": 224,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/scripts/embed-tokens.cjs",
+   "sha256": "23a9ce214e3c0d2fb4c5442b3bf1222c66721f7988a181ab29dcb549a5e5f511",
+   "bytes": 2558,
+   "lines": 99,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/scripts/fetch-background.py",
+   "sha256": "cecedad0a9054e6e65f31ab7ba7d07eb6af2179e237c5632bc962dad69fd6d66",
+   "bytes": 12287,
+   "lines": 317,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/scripts/generate-slide.py",
+   "sha256": "0463c98efea54870816925015fe5819e42a29aaba57408c2c38bacb33e2605b9",
+   "bytes": 28595,
+   "lines": 770,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/scripts/generate-tokens.cjs",
+   "sha256": "aac8a0f4ec4dccf0d371f9ee5a9111e44977bb0cad7e40a3754aba5571aa1231",
+   "bytes": 4968,
+   "lines": 205,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/scripts/html-token-validator.py",
+   "sha256": "9556a65e7aacda23388478294ee9a5cb84b315d964fbbf754aa0dcdbcfee58e6",
+   "bytes": 11894,
+   "lines": 327,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/scripts/search-slides.py",
+   "sha256": "fded9548bc1bbe1303da67fabe34006c6a7c57934c9d171ea3dc3eb5f6eee010",
+   "bytes": 9210,
+   "lines": 218,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/scripts/slide-token-validator.py",
+   "sha256": "66da5da5e8e659d405a89b342e13dd1e469e79726c46002d9d2368c3c7aaf945",
+   "bytes": 973,
+   "lines": 35,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/scripts/slide_search_core.py",
+   "sha256": "2464050ae338eb50728086046b644845fa7ae943f32efead3908fdbe1473edbe",
+   "bytes": 14756,
+   "lines": 453,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/scripts/tests/test_validate_tokens.py",
+   "sha256": "a32f34a9e89542a341b6ff3ee4392494b48dea622b22b99652d3cf0c1a1ee966",
+   "bytes": 1619,
+   "lines": 48,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/scripts/validate-tokens.cjs",
+   "sha256": "65f03a29290b9029d8cc27537701f226de7bcffc303b3bc361648fadfa09b77d",
+   "bytes": 5942,
+   "lines": 246,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design-system/templates/design-tokens-starter.json",
+   "sha256": "5444f477b06bab9c72e2cc289d4a9104efef653391c9639972bcb712d5f2d81e",
+   "bytes": 7184,
+   "lines": 143,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/SKILL.md",
+   "sha256": "413f4ab913d07f7fd92acbadc25d71aad63443be0c40d11234944aea688603b6",
+   "bytes": 12322,
+   "lines": 313,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/data/cip/deliverables.csv",
+   "sha256": "229912f35c2f5a790508ddd62270cc7a92a84694027025ea5a30f1fb5ba84b70",
+   "bytes": 13385,
+   "lines": 51,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/data/cip/industries.csv",
+   "sha256": "729b1dea6d6f39b0bc22a1e659584e7ca5cead75841146d599c9f8dc00d4da46",
+   "bytes": 4935,
+   "lines": 21,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/data/cip/mockup-contexts.csv",
+   "sha256": "15d61cef16e6746d5aa665976f4de8074fedb64bfc5c7313a40eec1112a1d499",
+   "bytes": 5205,
+   "lines": 21,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/data/cip/styles.csv",
+   "sha256": "4e7f9e209bc90b60df62fd9843a1a73b365e54161dbd820b82817a8e512af4c4",
+   "bytes": 5967,
+   "lines": 21,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/data/icon/styles.csv",
+   "sha256": "a4aa7d326ffe1e50961eb70e25a6351f45c0247cd245461fa1a27cdc72f903b4",
+   "bytes": 2250,
+   "lines": 16,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/data/logo/colors.csv",
+   "sha256": "d60218f0705bb0f0b892a10468a5c8d9a44eef3d0262ef8df8970ba3fbab567a",
+   "bytes": 10674,
+   "lines": 56,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/data/logo/industries.csv",
+   "sha256": "e58dda4b9d28851f70914f82c1d2a2cff626a991ca41076f64122f33cc8a6525",
+   "bytes": 13274,
+   "lines": 56,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/data/logo/styles.csv",
+   "sha256": "ea08bdfb7aa557f08d1b6299222423f948700f8e4029321acb58c8f83197bdf2",
+   "bytes": 13678,
+   "lines": 56,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/references/banner-sizes-and-styles.md",
+   "sha256": "c8906fb1073a576ee8c680d9bc8586249cbc4ed36690da960d65a1c9c37143b7",
+   "bytes": 4993,
+   "lines": 118,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/references/cip-deliverable-guide.md",
+   "sha256": "1424e120b967288e2334f24fcfa5cdc7f238420326a7444f4c5597efecfabc41",
+   "bytes": 1735,
+   "lines": 95,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/references/cip-design.md",
+   "sha256": "47a3b2e445bc07185edd0cd24ba8a417229baf86717dcdff7c4e403adbceb3f1",
+   "bytes": 4589,
+   "lines": 121,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/references/cip-prompt-engineering.md",
+   "sha256": "4bf3a0c858f38c230e43e872857b72d9eb692e066e8de5920da75aac733e753c",
+   "bytes": 2493,
+   "lines": 84,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/references/cip-style-guide.md",
+   "sha256": "f3e15408cd981e93804440c1159c12e02d001bc37a3945f455b3fc13729ed4e1",
+   "bytes": 2357,
+   "lines": 68,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/references/design-routing.md",
+   "sha256": "32914a913f4f20d4cb1e497e5a87cfc04b71af4e6d75db72ecf50e4f060201c8",
+   "bytes": 5826,
+   "lines": 207,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/references/icon-design.md",
+   "sha256": "39281931d070918b4e51ecd71054da99493cabe06a07dfa8f1f682e48637c83f",
+   "bytes": 4343,
+   "lines": 122,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/references/logo-color-psychology.md",
+   "sha256": "3fd0e93e24c3b2ea7f3be778e8f2d03b1c62c7c6eab3ade478c8fca332bff287",
+   "bytes": 3341,
+   "lines": 101,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/references/logo-design.md",
+   "sha256": "2e845fe165c845fd9582c1d74204fa31de607380982a6ea0b5f8db4e293afa3a",
+   "bytes": 3163,
+   "lines": 92,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/references/logo-prompt-engineering.md",
+   "sha256": "e50f55bf323263eb27b4cd4c5172383a787fb894581d5d2befb3f6e0180b253e",
+   "bytes": 4314,
+   "lines": 158,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/references/logo-style-guide.md",
+   "sha256": "611baa841eedab101f45c113c6bfbd4d7e16e859c9d6ebd2cf941827a6e8dd15",
+   "bytes": 3435,
+   "lines": 109,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/references/slides-copywriting-formulas.md",
+   "sha256": "03733d5916ab771834745550045b736deeb94a08226f2b200f7953009c35b219",
+   "bytes": 2604,
+   "lines": 84,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/references/slides-create.md",
+   "sha256": "792d647a5d4f87d765cf417f7ac54dd0b2fc4d229cc23ea9df56282d4c1ee086",
+   "bytes": 153,
+   "lines": 4,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/references/slides-html-template.md",
+   "sha256": "fd5b051a37365fc6059c75bb388ec6f64daf1bd9ae938b287b6d762dc83c0c35",
+   "bytes": 9004,
+   "lines": 295,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/references/slides-layout-patterns.md",
+   "sha256": "0a967ca3bd829d3234e6f1802bade6c76447fabbaddbc8117c41adbae7dfb6df",
+   "bytes": 3691,
+   "lines": 137,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/references/slides-strategies.md",
+   "sha256": "27ee3e53ffa0ea679ec83ebeacb0bcfbce498df57277e99f574b9c139dc44286",
+   "bytes": 2715,
+   "lines": 94,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/references/slides.md",
+   "sha256": "5630d5daec947ff58ab1ac97c7a1ee77a21cf6f5dce5155535b65d291691979f",
+   "bytes": 1742,
+   "lines": 42,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/references/social-photos-design.md",
+   "sha256": "2544c143ff3a4471a775e2271797a3871480f94de91b267178da92e8952192a0",
+   "bytes": 11251,
+   "lines": 329,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/scripts/cip/core.py",
+   "sha256": "78a78a51f12d2382b2854414df395dc62b68532626ef724ddd5de713507911e4",
+   "bytes": 8062,
+   "lines": 215,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/scripts/cip/generate.py",
+   "sha256": "2745040c9b534cf4113d2f7f4d7a52bc96a9fbfa12204c4f8460be4e15449069",
+   "bytes": 19430,
+   "lines": 484,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/scripts/cip/render-html.py",
+   "sha256": "a49a89a017ea4a2c492438055f05dfba3dfb4f91563f5f913359939beeaeccab",
+   "bytes": 13941,
+   "lines": 424,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/scripts/cip/search.py",
+   "sha256": "6619fbbe71983003a858c5eb79bc59c607b342610a1178b6976c687c2932161b",
+   "bytes": 4524,
+   "lines": 127,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/scripts/icon/generate.py",
+   "sha256": "1a6be99dc233f6d9f8b558c26148203418be5b47c677cd83e48e41e78e38780c",
+   "bytes": 17151,
+   "lines": 487,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/scripts/logo/core.py",
+   "sha256": "4f8b36ffe538e5995d0e0b740053a0899a1adf445ffdf484bd47f94e71ade8d0",
+   "bytes": 6023,
+   "lines": 175,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/scripts/logo/generate.py",
+   "sha256": "6e4358f21cd85fec51c8d01b03e3696d6db180815309d7e10a19c623d4d4462c",
+   "bytes": 14630,
+   "lines": 362,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/design/scripts/logo/search.py",
+   "sha256": "693b3a1824831f120d4c60ed72477847604da1f6b654343381f8e9d3800a28f2",
+   "bytes": 4745,
+   "lines": 114,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/slides/SKILL.md",
+   "sha256": "2b90bdaf63f231919a01f4962f374ecd84af101a7e7545f8d9c68e049025accb",
+   "bytes": 1137,
+   "lines": 40,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/slides/references/copywriting-formulas.md",
+   "sha256": "03733d5916ab771834745550045b736deeb94a08226f2b200f7953009c35b219",
+   "bytes": 2604,
+   "lines": 84,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/slides/references/create.md",
+   "sha256": "792d647a5d4f87d765cf417f7ac54dd0b2fc4d229cc23ea9df56282d4c1ee086",
+   "bytes": 153,
+   "lines": 4,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/slides/references/html-template.md",
+   "sha256": "fd5b051a37365fc6059c75bb388ec6f64daf1bd9ae938b287b6d762dc83c0c35",
+   "bytes": 9004,
+   "lines": 295,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/slides/references/layout-patterns.md",
+   "sha256": "0a967ca3bd829d3234e6f1802bade6c76447fabbaddbc8117c41adbae7dfb6df",
+   "bytes": 3691,
+   "lines": 137,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/slides/references/slide-strategies.md",
+   "sha256": "27ee3e53ffa0ea679ec83ebeacb0bcfbce498df57277e99f574b9c139dc44286",
+   "bytes": 2715,
+   "lines": 94,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-styling/LICENSE.txt",
+   "sha256": "58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd",
+   "bytes": 11357,
+   "lines": 202,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-styling/SKILL.md",
+   "sha256": "f8b6c3832d2af51f67b3932e3c4a79bcd8a8596cc61ce1547a686fc951e5c62d",
+   "bytes": 10045,
+   "lines": 324,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-styling/references/canvas-design-system.md",
+   "sha256": "f5de85ff39d9f3a8275c4164b921ba72d5e1d34b8d7a9243d9ee34b3870a4f5f",
+   "bytes": 7888,
+   "lines": 320,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-styling/references/shadcn-accessibility.md",
+   "sha256": "a22cd4ccf82b635b2b2c4f12416a0c4f7edcd825d219d6089450fa797a0d9511",
+   "bytes": 9976,
+   "lines": 471,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-styling/references/shadcn-components.md",
+   "sha256": "79c4f91cbf68993a43fa3a95889c35db73de45bdd3dfd83a6830863c01aa598a",
+   "bytes": 11155,
+   "lines": 424,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-styling/references/shadcn-theming.md",
+   "sha256": "d17d641474221123ff0e0288043ca2f2dab3ac96908a19eed28d82f9e58865ed",
+   "bytes": 8672,
+   "lines": 373,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-styling/references/tailwind-customization.md",
+   "sha256": "4c5adeed6263a274f74f6eb2c816ca420fd6ef4f35683582988bacd404799afe",
+   "bytes": 10171,
+   "lines": 483,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-styling/references/tailwind-responsive.md",
+   "sha256": "8d00ae620df26daea4623c7bf996d6e612e09d359305fcfa2b40cab757ed840c",
+   "bytes": 8270,
+   "lines": 382,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-styling/references/tailwind-utilities.md",
+   "sha256": "aba1c40ef84f43beea142ae310371e332541f39d973df90a71f1854823effda1",
+   "bytes": 9980,
+   "lines": 455,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-styling/scripts/requirements.txt",
+   "sha256": "09402d2d274248e18bb5fd0a0267fd7cbf99b7a2440e73e87f054aa8f259f9da",
+   "bytes": 444,
+   "lines": 17,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-styling/scripts/shadcn_add.py",
+   "sha256": "0c11d28ce9f12217df2c3306f24ae1f73527d5116db63707ab55cbe1a8bcf28c",
+   "bytes": 8799,
+   "lines": 308,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-styling/scripts/tailwind_config_gen.py",
+   "sha256": "2e264ec871499681aecd6111f60743fba31b5ceb7e9ccb2b71b7346039285f89",
+   "bytes": 14418,
+   "lines": 473,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-styling/scripts/tests/coverage-ui.json",
+   "sha256": "33bdc1f5998db9a38cac8e6128a82711f8f8b65fbb3dcb0c1680ae260441cbce",
+   "bytes": 35121,
+   "lines": 1,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-styling/scripts/tests/requirements.txt",
+   "sha256": "80846c98ee02a7e9651ec4eee6709f840b785646b469aad5284ab7ab9b344f17",
+   "bytes": 52,
+   "lines": 3,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-styling/scripts/tests/test_shadcn_add.py",
+   "sha256": "35f60ac5d74c4a7f950854a0337883c3e8dd812c58fcf6c5153876e43a6effa2",
+   "bytes": 9919,
+   "lines": 266,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-styling/scripts/tests/test_tailwind_config_gen.py",
+   "sha256": "4efa59fdbe318d55e6a452d85401db5d1aa4504f93739878bb40d8bb504af585",
+   "bytes": 14658,
+   "lines": 394,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/SKILL.md",
+   "sha256": "40a576d468bd72126b10063709baaa11e5d06840b68129000c3e19fdfda7d227",
+   "bytes": 55473,
+   "lines": 739,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/app-interface.csv",
+   "sha256": "331e7cf2c0b222d80c566c5f255c63cb339f65bfd02e471a720f28e4864a9f08",
+   "bytes": 11046,
+   "lines": 33,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/catalog-summary.json",
+   "sha256": "65fe0b64480a8a827738297d0a64ca55c627d4afcb774fe4555c59cea8dd6905",
+   "bytes": 2392,
+   "lines": 78,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/charts.csv",
+   "sha256": "4115cf1120680f2cedef0676cb648f30c7ef4699e2a947535d4113e71ed3b12a",
+   "bytes": 23365,
+   "lines": 26,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/colors.csv",
+   "sha256": "8162429222bce22df62b564085946a30d07cc9722c58d0a3a494bd0d1d00841c",
+   "bytes": 37940,
+   "lines": 193,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/data-provenance.json",
+   "sha256": "e82fb33ed49375a300e93d9c11ccd1c1493c999e84ee7ee295e527634786e2e0",
+   "bytes": 36686,
+   "lines": 1348,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/google-font-licenses.json",
+   "sha256": "35688523f2955795caa1a47c53b83099e60c1708461476f9cc3a050cf3b0148a",
+   "bytes": 433127,
+   "lines": 20185,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/google-fonts.csv",
+   "sha256": "1c8c3b2ea1faf6a1012da463756def8b3889db33f2226f0343bb4daa80307d03",
+   "bytes": 747241,
+   "lines": 1935,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/icons.csv",
+   "sha256": "50816c6012030178195a16ee481ebf58b47bd985d70e8ec58886cc83f6eddafc",
+   "bytes": 57945,
+   "lines": 106,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/landing.csv",
+   "sha256": "9a2edd3bb676c2a58f00ade7a062e285222d4297bfd847c8d5b056f0dbbf52d0",
+   "bytes": 25449,
+   "lines": 35,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/motion.csv",
+   "sha256": "381affe8df8ea1f66fbbda2598827f9f54299107bbe6a1b4e9b68f6b62091ceb",
+   "bytes": 14679,
+   "lines": 18,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/phosphor-icons-upstream.json",
+   "sha256": "2399325233b277b5c97a80e6a5e8941154f5d057beee4e7613db87c87d700236",
+   "bytes": 823933,
+   "lines": 32582,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/products.csv",
+   "sha256": "42473f75e8dde5987bdf89ce55d8c168091b80a356cae691dd60247d80720b70",
+   "bytes": 75623,
+   "lines": 193,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/react-performance.csv",
+   "sha256": "3d925802539abac5afeb63ae8aa1960b7229ad271b3a47caed40ab2d97ad0734",
+   "bytes": 15080,
+   "lines": 45,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/angular.csv",
+   "sha256": "704be83f2bad30c7e6de01afb113ffa01e0c458762f48b7102f31ba2367b5553",
+   "bytes": 19863,
+   "lines": 51,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/astro.csv",
+   "sha256": "2c2f55fadaafc05e04cc321c8194a1a28b656e6757fe2ba316f41b16428299c6",
+   "bytes": 14591,
+   "lines": 54,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/avalonia.csv",
+   "sha256": "442fca14675a020683473e7e49f08abb27b9df0765c80efe54aef61f1a4ac258",
+   "bytes": 27327,
+   "lines": 57,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/flutter.csv",
+   "sha256": "64dba0ac17349f28bce517a0f5f48c54d9ed2e487ec0c0258303463b382f41a0",
+   "bytes": 14192,
+   "lines": 53,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/html-tailwind.csv",
+   "sha256": "d05a581d20af57b8ca0104a6d31d90a07c437d500662a96c3029fc2f9a4678ee",
+   "bytes": 16551,
+   "lines": 60,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/javafx.csv",
+   "sha256": "2e819b8d5abdd23ad4dae0991650fdb57af497aabd68b37463aa9c442944c869",
+   "bytes": 33577,
+   "lines": 76,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/jetpack-compose.csv",
+   "sha256": "699de218b286948eaec7d15767b6e1350ee299167e49bf476d82e3ff58724e0a",
+   "bytes": 12295,
+   "lines": 53,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/laravel.csv",
+   "sha256": "854ea4daa5fc61292d22235ad33b49ba3fe22423c3de8d3cb03758ffed3b59f9",
+   "bytes": 20163,
+   "lines": 51,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/nextjs.csv",
+   "sha256": "ecd2c27b2ea0127d203ae726060efcdd7335b5e83f96b99e4f3befbbfeebd5a4",
+   "bytes": 18687,
+   "lines": 62,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/nuxt-ui.csv",
+   "sha256": "c36ee8470926b4a0748d241363c71664c9969c2edbc62f7f72de0db73880fac6",
+   "bytes": 24106,
+   "lines": 71,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/nuxtjs.csv",
+   "sha256": "3d9b54ed2d151bd9c86e9e5609b8a6f88a00c4c52fa601a30af96c49b2c4d176",
+   "bytes": 23014,
+   "lines": 68,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/react-native.csv",
+   "sha256": "ba31dd9c0c04da6bc02a74448bf121f9c0728ae5ba3b4d47b487778b0a1135b5",
+   "bytes": 14049,
+   "lines": 52,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/react.csv",
+   "sha256": "2d2b9c198e875106a30f7ee68341a9ee0033cad60a7e130cf23152783e08aeda",
+   "bytes": 19036,
+   "lines": 62,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/shadcn.csv",
+   "sha256": "e56cfde5b74907836ac3582a4779d5b7f3d206a702ab81b8669a1b668c3eeb51",
+   "bytes": 23184,
+   "lines": 69,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/svelte.csv",
+   "sha256": "f6e379ba802941ba26b01d4ffbe3cd39120f2587659a1d93851c707f66bc13db",
+   "bytes": 15078,
+   "lines": 56,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/swiftui.csv",
+   "sha256": "bdd9231ff3ad658f4e7c063e1eb49df2fd09ac8d90631a86df899b39833b9623",
+   "bytes": 15323,
+   "lines": 51,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/threejs.csv",
+   "sha256": "97542e0ba34915a0ff7578be20e1619495df47c95c8c1c39b83e3785e1de771f",
+   "bytes": 46051,
+   "lines": 54,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/uno.csv",
+   "sha256": "a0474363e4225b5367214d5675fd3e075f137026f9500f0d04357882ef4f6d48",
+   "bytes": 30091,
+   "lines": 60,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/uwp.csv",
+   "sha256": "c409f08c1fbba1f1029f1acaa554e7b4471cc85517a5751c9f2e62465badcd5c",
+   "bytes": 24692,
+   "lines": 56,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/vue.csv",
+   "sha256": "b655f1ebb9dff2652d15981f31b1784c8a6d4759efd2815a14f3088257569f95",
+   "bytes": 12813,
+   "lines": 50,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/winui.csv",
+   "sha256": "e676dc1c13ee6c205c40b0746f1335150a346c7a49a0616d2545bc3d2c930c85",
+   "bytes": 27890,
+   "lines": 60,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/stacks/wpf.csv",
+   "sha256": "9781a9950b20333637b30a02e498b7efca21b618a3eeb8665836f3ac6e974da7",
+   "bytes": 24158,
+   "lines": 57,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/styles.csv",
+   "sha256": "a93a4d9d7025856575d7b7583bda020be9043013432c5af7c58af9dbdfb206b7",
+   "bytes": 149478,
+   "lines": 89,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/typography.csv",
+   "sha256": "321fc446e89024488ebae96dda93efc4d2307bd8bddb240857ad51364f6782c8",
+   "bytes": 49997,
+   "lines": 75,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/ui-reasoning.csv",
+   "sha256": "f0774dd741cecdad5eec842034bd6d5e9ea50e9f220a1910069748daa0bb8e9a",
+   "bytes": 77360,
+   "lines": 193,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/data/ux-guidelines.csv",
+   "sha256": "ff81ec613f70ba9fc3fcce52dbe4ae35d44b2079dbe6dc066d2d6e38c28facd5",
+   "bytes": 27516,
+   "lines": 120,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/core.py",
+   "sha256": "e544826963efefce3c59b65e18d83d92a5baf571f05458025bf1fa9021eced42",
+   "bytes": 41234,
+   "lines": 993,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/design_system.py",
+   "sha256": "6a94743c3362c9c7e6d1450b94f4014d9ea752e7b4e151f6f0bdb217e0544bf7",
+   "bytes": 70937,
+   "lines": 1643,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/reasoning_contract.py",
+   "sha256": "b8bac1af82aa280d3e06f00aabaeac4337e632996b07fed874e2b6ee6e9c5913",
+   "bytes": 5824,
+   "lines": 123,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/search.py",
+   "sha256": "8373e2dd2d560d9853ec116140de0e0d5bee45a6abe5e041173c84e1c36a7f87",
+   "bytes": 9123,
+   "lines": 171,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/fixtures/catalogs/google-api.json",
+   "sha256": "22d8dc81a7d6827b7e8b64b53e7d184210fb9759e8e294e0d5133c81cc460176",
+   "bytes": 1079,
+   "lines": 36,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/fixtures/catalogs/google-catalog.json",
+   "sha256": "c608ad5c4084ebc50a4bbbfb69ea2456c01fd5519c457e18410fffd250ae948f",
+   "bytes": 1772,
+   "lines": 33,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/fixtures/catalogs/google-existing.csv",
+   "sha256": "4e0761b839dc6b2187a370e82eddc0aed8a7ff10c09e28dd814bb3656dac595b",
+   "bytes": 480,
+   "lines": 3,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/fixtures/catalogs/google-metadata.json",
+   "sha256": "30bffc29ae348416a2de2f9c6c418e768e4578f136b0f4bac5d2f70124f2e9ba",
+   "bytes": 328,
+   "lines": 17,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/fixtures/catalogs/google-overrides.json",
+   "sha256": "6243a48a4619986768c4628e2d0c98ff195beba71ba9be5df8f0c52fc6d90c0b",
+   "bytes": 97,
+   "lines": 7,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/fixtures/catalogs/icons-curated.csv",
+   "sha256": "68362c9a700c13b96f000784a0198c1c7e117a7088a01c85744e44233038fe9d",
+   "bytes": 495,
+   "lines": 4,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/fixtures/catalogs/phosphor-core.json",
+   "sha256": "ae4d0bb076240824e1b643c2270d1f8cc0952a69502ec1e622b7dedd85b930bb",
+   "bytes": 571,
+   "lines": 23,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/fixtures/catalogs/phosphor-package.json",
+   "sha256": "500588c757d6de03e3d7e69b27a8b8b1f88ccf6bb0333e4c1e9b0d6a4f112475",
+   "bytes": 370,
+   "lines": 13,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/fixtures/catalogs/phosphor-react-exports.json",
+   "sha256": "d79f2ee0afdbc2f87776733e145df3538a16a25d7c2fba0056bb48295dad0ded",
+   "bytes": 87,
+   "lines": 4,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/fixtures/catalogs/phosphor-react-package.json",
+   "sha256": "1c57a1d76bcc0cdd3632d4c18b9c0e79576b4591df39831c9607e5d0eb4f2cec",
+   "bytes": 81,
+   "lines": 5,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/fixtures/relevance-baseline.json",
+   "sha256": "38398452985116e74e31bd6bccca0f4decd1bbfe4eebc1ac99f7a1836baaf77f",
+   "bytes": 89436,
+   "lines": 3366,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/fixtures/relevance-cases.json",
+   "sha256": "e77d36eebbf6ddc2860946a02cdb659351da6c09f2688f1ed30939a418099646",
+   "bytes": 36734,
+   "lines": 111,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/fixtures/relevance-thresholds.json",
+   "sha256": "9d738e11c6b82fecc8d0946e7b38515518ded5ed3294a7eb19a021c4edb5b57d",
+   "bytes": 5079,
+   "lines": 100,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/test_catalog_refresh.py",
+   "sha256": "3e2ca5d12702318f641ae62d0c14f22a3bcc84d84e79b863c0e947d475604adb",
+   "bytes": 19466,
+   "lines": 354,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/test_core.py",
+   "sha256": "3527fe2f4b852f69f07c17ddc0d615d9a6e025c924e45a33985579a94a8d2118",
+   "bytes": 16680,
+   "lines": 343,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/test_core_data_quality.py",
+   "sha256": "3ffc6b4905c9ea26d7ac4527ab154d153584231aee71b2ae4bd017977fa09cc5",
+   "bytes": 8954,
+   "lines": 198,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/test_data_contracts.py",
+   "sha256": "0360d6e10080c0bca214f2b0bbad582ba50702a542ce21013351aca54938df3a",
+   "bytes": 19513,
+   "lines": 421,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/test_design_system_mode.py",
+   "sha256": "517ba1ba6195c94811126d1162139c51aff77fc68c3e320c7bb6c1e89e76bc9b",
+   "bytes": 7690,
+   "lines": 189,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/test_native_desktop_stack_freshness.py",
+   "sha256": "904f90bc6d364763673fa6067d98a4227d535760fa8b6d26abe22208176997ca",
+   "bytes": 8170,
+   "lines": 176,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/test_relevance_evaluator.py",
+   "sha256": "2fe56a4d6fe5fff15ff592274b0eeaba925146cefea6c0fa29d8f1b77c9aca1f",
+   "bytes": 8430,
+   "lines": 182,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/test_style_taxonomy.py",
+   "sha256": "cd14d0092e8a454d213aa104b53e4e70ba698491fa00fde9fdec5ca8a3d70011",
+   "bytes": 7425,
+   "lines": 175,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/test_text_layout_resilience.py",
+   "sha256": "b51d32ee8a15505b87cb81957fb2d1b385e041e8beb4463c311d236bfd29ebd4",
+   "bytes": 5874,
+   "lines": 120,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/tests/test_web_stack_freshness.py",
+   "sha256": "becc5fa40e7516613d4e9930f226aa483e3796090c17cb16542c93d1927e680d",
+   "bytes": 7699,
+   "lines": 177,
+   "step": "tooling",
+   "kind": "optional"
+  },
+  {
+   "path": ".claude/skills/ui-ux-pro-max/scripts/validate_data.py",
+   "sha256": "718ad4cbb227436015c9c2bc80fc583d6ed738b01c1a940ef85e350780d99f58",
+   "bytes": 52064,
+   "lines": 1091,
+   "step": "tooling",
+   "kind": "optional"
+  }
+ ],
+ "pack": [
+  {
+   "path": ".github/copilot-instructions.md",
+   "sha256": "bf8b3792faf72482e9d4f303b6f4ba19b0b27d3c843b355709dbcfdcf9792132"
+  },
+  {
+   "path": ".github/instructions/api-routes.instructions.md",
+   "sha256": "a21806dca16ed134adac15ea6f1ab4ea212ff2740257b4ddfbbe2678d2eadf6b"
+  },
+  {
+   "path": ".github/instructions/components.instructions.md",
+   "sha256": "147449e6e6ce5a409de4042529567c8a1590c9f16a236e94770deb0182671a5b"
+  },
+  {
+   "path": ".github/instructions/database.instructions.md",
+   "sha256": "7dd39e4bb14528828c6875de404b3d3a24d23b0e990c98ff2ae397c12fc51466"
+  },
+  {
+   "path": ".github/instructions/router.instructions.md",
+   "sha256": "f93b5f153b4746c122f17cd6a1dad54c882257c03090458bd745630276de9ad5"
+  },
+  {
+   "path": ".github/instructions/tests.instructions.md",
+   "sha256": "db3ae702d0a6bd740deae3b3a53243a268f9413b8801ab530b5188e4012b941f"
+  },
+  {
+   "path": ".github/prompts/cyphor-0-audit.prompt.md",
+   "sha256": "b8b9567984ebea83fc95766cf05623ac83e6eeb988d773a8fd01c7266644488d"
+  },
+  {
+   "path": ".github/prompts/cyphor-1-foundation.prompt.md",
+   "sha256": "a1debe4a7c1541b8ed0ddecb731d5f5cac7035eb9a3f0b3f8c00eebd00f296cd"
+  },
+  {
+   "path": ".github/prompts/cyphor-2-server.prompt.md",
+   "sha256": "84ecd95dc273b7f1d02b1e3b0caad1309ae0c75ec060ff6f9169003b73f86b78"
+  },
+  {
+   "path": ".github/prompts/cyphor-3-router.prompt.md",
+   "sha256": "5c7269d958762b450abf4597674a4aa70a6e7afc0f6fda0e83cb77a3cef8521a"
+  },
+  {
+   "path": ".github/prompts/cyphor-4-interface.prompt.md",
+   "sha256": "86bf07d5388eb5763fbbc7382263cb9a1a5be75d5b44f7f12492eb1496df3cec"
+  },
+  {
+   "path": ".github/prompts/cyphor-5-tests.prompt.md",
+   "sha256": "555b9181dffb578dea07525dc08a781f6f7afe3979f38be642eec3d2028a66f9"
+  },
+  {
+   "path": ".github/prompts/cyphor-6-final-check.prompt.md",
+   "sha256": "0f5be841b4612c5ca2070f43b4ddc7daef7415a8df18c3ed822fbd5bc2b3afc8"
+  },
+  {
+   "path": ".github/prompts/cyphor-fix-file.prompt.md",
+   "sha256": "1120de42130586e8105c43cd376cd018dc94c1ca0585720d1e445a59f5690676"
+  },
+  {
+   "path": "AGENTS.md",
+   "sha256": "83bbe4f94631a1164832ae2fac2529f70aaafdc0614b71169509c9442bb0b3f9"
+  },
+  {
+   "path": "docs/API.md",
+   "sha256": "8d1f5632e6ac375b57533dbb17dfcb8163e3c3a1af711e88d11336960e236335"
+  },
+  {
+   "path": "docs/APPLY-GUIDE.md",
+   "sha256": "24a6408111f8b2461dd591a0f1fa3977b0f1c639af6367323a44cb9bd67037af"
+  },
+  {
+   "path": "docs/ARCHITECTURE.md",
+   "sha256": "ac86074515bbe16f3dd88daaff7d2e6f9eb63bf4c314de138ac4a978d695c16f"
+  },
+  {
+   "path": "docs/ENV-AND-SECURITY.md",
+   "sha256": "5ea19ce885619ad13dc301c488a4f4aee44068b589212d8eda4c61d176f27779"
+  },
+  {
+   "path": "docs/FILE-MAP.md",
+   "sha256": "ced551e8514748be31592764bdfe78b6a6cda6525c2a1b95e6efc15d95fcaeb5"
+  },
+  {
+   "path": "docs/README.md",
+   "sha256": "2b70507284da5a281516371d133737273041cfe0fcc9293db34cb1aa1197fdc0"
+  },
+  {
+   "path": "docs/ROUTER-AND-GOD-MODE.md",
+   "sha256": "9d98799295e728c4545f9636b4640bc2b9369412400a890874f9d07a7fdf3d27"
+  },
+  {
+   "path": "docs/TESTING.md",
+   "sha256": "626afa80ee01b2295f95c5638dffb8e031e02cfe6dadbfb7474207b29c4bc1ad"
+  },
+  {
+   "path": "docs/TROUBLESHOOTING.md",
+   "sha256": "82d2a07e344308e53919350eeb427bee0508682d48c11aa8bda29e13e1f4d1dc"
+  },
+  {
+   "path": "docs/UI-AND-DESIGN.md",
+   "sha256": "c6ecfcda5af20d3a4595ccc32e8ce86de92ee660c9c50dabbecfa60382c52b49"
+  },
+  {
+   "path": "docs/tools/verify-files.mjs",
+   "sha256": "fc33700d51e00250037c85a8cadac0e67b716e6cfa42975e6b868e92add99db6"
+  }
+ ]
+}

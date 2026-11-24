@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { sendMessage } from "@/lib/actions"
 import { readAttachment } from "@/lib/files"
-import { collectArtifacts } from "@/lib/parse"
+import { collectArtifacts, mayHaveArtifacts } from "@/lib/parse"
 import { href, navigate, useRouteId } from "@/lib/route"
 import { activeThread, useChatMetas, useStore, type ChatMeta } from "@/lib/store"
 import type { ArtifactType, Attachment } from "@/lib/types"
@@ -148,7 +148,7 @@ export function ChatsPage() {
               <MessagesSquare />
             </EmptyMedia>
             <EmptyTitle>No chats yet</EmptyTitle>
-            <EmptyDescription>Conversations you have are saved here on this device, so you can pick them up later.</EmptyDescription>
+            <EmptyDescription>Conversations you have are saved to your account, so you can pick them up later on any device.</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <Button asChild>
@@ -162,7 +162,7 @@ export function ChatsPage() {
 
   return (
     <Page>
-      <div className="sticky top-0 z-10 -mx-4 space-y-3 bg-background/95 px-4 pt-1 pb-3 backdrop-blur-sm sm:-mx-6 sm:px-6">
+      <div className="page-head sticky top-0 z-10 -mx-4 space-y-3 bg-background/95 px-4 pt-1 pb-3 backdrop-blur-sm sm:-mx-6 sm:px-6">
         <div className="flex gap-2">
           <div className="relative min-w-0 flex-1">
             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
@@ -280,7 +280,7 @@ export function ProjectsPage() {
                   href={href.project(p.id)}
                   className="group/project flex h-full min-h-36 flex-col rounded-2xl border bg-card p-4 transition-[border-color,box-shadow,transform] duration-200 hover:border-primary/40 hover:shadow-md active:scale-[0.99]"
                 >
-                  <span className="font-serif text-lg leading-snug font-medium">{p.name}</span>
+                  <span className="font-display text-lg leading-snug font-semibold">{p.name}</span>
                   <span className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-muted-foreground">{p.description || "No description yet"}</span>
                   <span className="mt-auto pt-4 text-xs text-muted-foreground">
                     {n} chat{n === 1 ? "" : "s"} · Updated {formatRelative(p.updatedAt)}
@@ -385,7 +385,6 @@ export function ProjectPage({ id }: { id: string }) {
   const metas = useChatMetas()
   const [confirm, setConfirm] = useState(false)
   const chats = useMemo(() => metas.filter((m) => m.projectId === id), [metas, id])
-  const setIncognito = useUI((s) => s.setIncognito)
 
   if (!project) {
     return (
@@ -409,7 +408,6 @@ export function ProjectPage({ id }: { id: string }) {
   }
 
   const start = (text: string, files: Attachment[]) => {
-    setIncognito(false)
     const chatId = createChat({ projectId: id, model: defaultModel })
     navigate(href.chat(chatId))
     sendMessage(chatId, text, files)
@@ -448,7 +446,7 @@ export function ProjectPage({ id }: { id: string }) {
                 onChange={(e) => update(id, { name: e.target.value })}
                 onBlur={() => !project.name.trim() && update(id, { name: "Untitled project" })}
                 onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
-                className="-mx-2 w-[calc(100%+1rem)] rounded-lg bg-transparent px-2 py-1 font-serif text-3xl leading-tight font-medium tracking-tight transition-colors outline-none hover:bg-accent/60 focus-visible:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring/50"
+                className="-mx-2 w-[calc(100%+1rem)] rounded-lg bg-transparent px-2 py-1 font-display text-3xl leading-tight font-semibold tracking-tight transition-colors outline-none hover:bg-accent/60 focus-visible:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring/50"
               />
             </h1>
             <Textarea
@@ -557,7 +555,9 @@ interface Item {
 const FILTERS: { id: "all" | ArtifactType; label: string }[] = [
   { id: "all", label: "All" },
   { id: "html", label: "Web pages" },
+  { id: "react", label: "React apps" },
   { id: "svg", label: "Images" },
+  { id: "mermaid", label: "Diagrams" },
   { id: "markdown", label: "Documents" },
   { id: "code", label: "Code" },
 ]
@@ -570,9 +570,8 @@ export function ArtifactsPage() {
   const items = useMemo(() => {
     const out: Item[] = []
     for (const c of Object.values(chats)) {
-      if (c.incognito) continue
       const thread = activeThread(c)
-      if (!thread.some((m) => m.role === "assistant" && m.content.includes("<artifact"))) continue
+      if (!thread.some((m) => m.role === "assistant" && mayHaveArtifacts(m.content))) continue
       for (const h of collectArtifacts(thread)) {
         const last = h.versions[h.versions.length - 1]
         out.push({

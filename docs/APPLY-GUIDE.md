@@ -1,47 +1,51 @@
 # Apply guide
 
-How to get the Cyphor files into your project folder exactly as they were delivered, and how to prove they landed. Follow this page from top to bottom.
+How to get the Cyphor files into your project exactly as delivered, and how to prove that they landed.
 
-You have two things:
+You have two zip files:
 
-- `cyphor-chat.zip`: the project, 359 files (356 of them are in the manifest; the other three are unneeded `.pyc` files). This is the **reference**: the files are right there, byte for byte.
-- This pack: documents, Copilot instruction and prompt files, a manifest of every file with its fingerprint, and a checker (`docs/tools/verify-files.mjs`) that tells you which files are in your folder and which are not.
+- `cyphor-chat.zip`: the project, 412 files. It is the **reference**: every file is in it, byte for byte.
+- `cyphor-docs-pack.zip`: this pack. Copilot rules and prompts, a list of every project file with its fingerprint (`docs/manifest.json`), and a checker (`docs/tools/verify-files.mjs`) that says which files in your folder are right and which are not.
 
-There are two ways to apply the files. **Path A copies them yourself and is the reliable one.** Path B asks Copilot to do the copying, one step at a time, and uses the checker to catch what it skipped.
+There are two routes. **The quick route copies the files yourself and is the reliable one.** The Copilot route asks Copilot to do the copying with a terminal command, and uses the checker to catch whatever it skips.
+
+What the app is, how to set up Neon and Google sign-in, and what was tested are in the project itself: `README.md` and `docs/ACCEPTANCE.md`.
 
 ## 1. Check your tools
 
 ```bash
-node -v      # must print v22.18 or newer (package.json says "node": ">=22.18")
+node -v      # v22.18 or newer (package.json says "node": ">=22.18")
 npm -v
 ```
 
-The unit tests run TypeScript directly, which is why Node 22.18 or newer is needed. Older Node: install a current one first.
+The unit tests run TypeScript directly, which is why they need Node 22.18 or newer.
 
 ## 2. Back up
 
-Do one of these before you copy anything. Nothing in this guide deletes your files, but files with the same name are replaced.
+Nothing in this guide deletes your files, but files with the same name are replaced. Before you copy anything, do one of these:
 
-- If the project is a git repository: `git add -A && git commit -m "before Cyphor files"`. Afterwards `git diff` shows what changed and `git restore <file>` undoes one file.
-- Otherwise copy the whole project folder somewhere else (leave out `node_modules`).
+- In a git repository: `git add -A && git commit -m "before the new Cyphor files"`. Afterwards `git diff` shows what changed and `git restore <file>` undoes one file.
+- Otherwise copy the project folder somewhere else (leave out `node_modules`).
 
 ## 3. Put this pack in your project
 
-Copy what is **inside** `cyphor-docs-pack/` into the project root, the folder that holds `package.json`. After that you should see these next to `package.json`:
+Copy what is **inside** `cyphor-docs-pack/` into the project root, the folder that holds `package.json`. You should then see, next to `package.json`:
 
 ```text
 AGENTS.md
 .github/copilot-instructions.md
-.github/instructions/   5 files
-.github/prompts/        8 files
-docs/                   the documents, manifest.json and tools/verify-files.mjs
+.github/instructions/    5 files (api-routes, components, database, router, tests)
+.github/prompts/         4 files (cyphor-0-audit, cyphor-1-apply, cyphor-2-final-check, cyphor-fix-file)
+docs/APPLY-GUIDE.md      this page
+docs/manifest.json       every project file with its fingerprint
+docs/tools/verify-files.mjs   the checker
 ```
 
 Folders that start with a dot are hidden. On macOS press `Cmd + Shift + .` in Finder to show them, and do not use "select all" in Finder, which skips them. In a terminal, `cp -R cyphor-docs-pack/. /path/to/project/` copies hidden folders too.
 
-If you already have an `AGENTS.md` or a `docs/` folder, do not overwrite: keep yours and add ours next to it (merge the text of `AGENTS.md` by hand).
+If you already have an `AGENTS.md` (Next.js can create one), do not overwrite it: keep yours and add the text of ours to it. The same goes for a `docs/` folder of your own: add ours next to your files.
 
-## 4. Path A: copy the files yourself
+## 4. Quick route: copy the project over yours
 
 1. Unzip `cyphor-chat.zip` **outside** your project. The zip holds one folder, `cyphor-chat/`.
 
@@ -69,178 +73,127 @@ If you already have an `AGENTS.md` or a `docs/` folder, do not overwrite: keep y
    robocopy "$HOME\cyphor-source\cyphor-chat" "C:\path\to\your-project" /E /XD node_modules .next .data /XF LLM.env
    ```
 
-   Mind the trailing `/` after `cyphor-chat` in the `rsync` command: it means "the contents of", and without it you get a folder inside a folder.
+   Mind the trailing `/` after `cyphor-chat` in the `rsync` command: it means "the contents of". Without it you get a folder inside a folder.
 
-   If `rsync` is missing, or complains about `--backup-dir` (the `rsync` that comes with some macOS versions is a cut-down one), use a plain copy instead. It makes no backup, so section 2 must be done first: `cp -R ~/cyphor-source/cyphor-chat/. /path/to/your-project/`. The unzipped folder has no `node_modules`, `.next`, `.data` or `LLM.env`, so nothing needs to be left out, as long as you did not run `npm install` inside it.
+   If `rsync` is missing, or complains about `--backup-dir` (the one that comes with some macOS versions is cut down), use a plain copy instead. It makes no backup, so section 2 must be done first: `cp -R ~/cyphor-source/cyphor-chat/. /path/to/your-project/`. The unzipped folder has no `node_modules`, `.next`, `.data` or `LLM.env`, so nothing needs to be left out, as long as you did not run `npm install` inside it.
 
-   The macOS and Linux commands were run against a scratch copy of the project, with `rsync` 3.2.7 on Linux; the `rsync` that comes with macOS was not available here. The Windows commands were written carefully but **not run on Windows**. If one fails, copy the files with File Explorer instead (turn on "Hidden items" in the View menu so `.gitignore` and `.github` show), skip `node_modules`, `.next`, `.data` and `LLM.env`, then let the checker tell you what is still missing.
+   The `rsync` command was run against a scratch copy of a project on Linux. The Windows command was written carefully but **not run on Windows**. If it fails, copy the files with File Explorer instead (turn on "Hidden items" in the View menu so `.gitignore` and `.github` show), skip `node_modules`, `.next`, `.data` and `LLM.env`, then let the checker tell you what is still missing.
 
-3. Settings files you changed yourself. These files are in the zip, and your own version may differ on purpose. If you want to keep your changes, restore your copy (from the backup or `git`), then add the Cyphor parts to it by hand. If you never changed them, the copy you just made is correct.
+3. Settings files you changed yourself. These files are in the zip, and your own version may differ on purpose. The copy in step 2 replaced them, so if you want your changes back, restore your copy from the backup or from git and add the Cyphor parts by hand.
 
-- `.env.example`
-- `.gitignore`
-- `components.json`
-- `next.config.ts`
-- `package-lock.json`
-- `package.json`
-- `postcss.config.mjs`
-- `tsconfig.json`
-- `app/globals.css`
-- `app/layout.tsx`
-
-   `package.json` matters most: it lists every package the app needs. Keep the zip's version, add back any packages of your own, and run `npm install` (step 5).
+   | File | What it holds | If yours differs |
+   | --- | --- | --- |
+   | `package.json`, `package-lock.json` | The packages and the scripts | Take both from the zip, add back any packages of your own, then `npm install`. The checker lists the packages that are missing. |
+   | `tsconfig.json`, `next.config.ts`, `postcss.config.mjs`, `components.json` | Compiler and build settings | Take the zip's, so the type check and the build behave as tested. |
+   | `.gitignore` | What git leaves out | Keep yours, but it must ignore `LLM.env`, `.env.llm`, `.env.local` and `.data`. The checker fails when it does not. |
+   | `.env.example` | The names of the settings, never real values | Take the zip's. Put real values in `.env.local` or `LLM.env`, not here. |
+   | `app/layout.tsx`, `app/globals.css` | The page shell (fonts, the theme script) and the design tokens | Take the zip's: the themes, the city and the colours depend on them. |
 
 4. Install and check:
 
    ```bash
    cd /path/to/your-project
    npm install
-   npx tsc --noEmit                      # prints nothing when it is fine
-   npm run test:unit                     # the summary should say: pass 170 and fail 0
    node docs/tools/verify-files.mjs      # every required file should be OK
-   npm run dev                           # open http://localhost:3000
+   npx tsc --noEmit --incremental false  # prints nothing when it is fine
+   npm run test:unit                     # the summary should say: pass 355 and fail 0
+   npm run build                         # ends with the route list
    ```
 
-Then go to section 7.
+   Then set up the database and sign-in as `README.md` says ("Start here"), and run `npm run dev`.
 
-## 5. Path B: let Copilot do it, one step at a time
+## 5. Copilot route
 
-Use this when you want Copilot to do the copying, or when you have your own changes in many files and want to decide file by file.
+Use this when you want Copilot to do the copying, or when you have changes of your own in several files and want to decide file by file.
 
 **Set up once**
 
 1. Put this pack in your project (section 3). Open the project folder in VS Code.
-2. Unzip `cyphor-chat.zip` outside the project (section 4, step 1) and add that folder to the workspace (`File > Add Folder to Workspace`, choose `cyphor-chat` inside it). Copilot reads the folders that are open in the workspace; it cannot see a folder that is not.
+2. Unzip `cyphor-chat.zip` outside the project (section 4, step 1) and add the unzipped folder to the workspace (`File > Add Folder to Workspace`, choose `cyphor-chat` inside it). Copilot reads the folders that are open in the workspace; it cannot see a folder that is not.
 3. Open Copilot Chat and switch it to **Agent** mode. In Ask mode Copilot can only answer; it cannot change files, which is the commonest reason nothing happens.
-4. Type `/` in the chat box. You should see the prompts that start with `cyphor-`. If you do not, the `.github/prompts` folder is not in the project root.
+4. Type `/` in the chat box. You should see the prompts that start with `cyphor-`. If you do not, `.github/prompts` is not in the project root.
 
 **Then, in this order**
 
 | What to run | What it does |
 | --- | --- |
-| `/cyphor-0-audit` | Changes nothing. Runs the checker and tells you which step to start with. |
-| `/cyphor-1-foundation` to `/cyphor-5-tests` | One step each (table below). Each asks for the path of the unzipped `cyphor-chat` folder, copies the files for that step, then runs the checker, the type check and the unit tests. |
-| `/cyphor-6-final-check` | Changes nothing. Runs every check and prints a table of results. |
-| `/cyphor-fix-file` | Restores one file from the reference when the checker says it is MISSING or DIFFERENT. |
+| `/cyphor-0-audit` | Changes nothing. Runs the checker and says what is left to do. |
+| `/cyphor-1-apply` | Asks for the path of the unzipped `cyphor-chat` folder, copies every missing or different file with a terminal command, leaves your settings files alone and asks about them, runs `npm install` when needed, then runs the checker, the type check, the unit tests and the build. |
+| `/cyphor-2-final-check` | Changes nothing. Runs every check again and prints a table of results. |
+| `/cyphor-fix-file` | Restores one file from the reference when the checker still shows it as MISSING or DIFFERENT. |
 
-Run **one step at a time** and look at the result before the next. After each step, run the checker yourself too. Do not trust a "done" you have not seen proven:
+After `/cyphor-1-apply`, run the checker yourself too. Do not trust a "done" you have not seen proven:
 
 ```bash
-node docs/tools/verify-files.mjs --only server          # use the step's name
+node docs/tools/verify-files.mjs
 ```
 
-If the checker lists files as MISSING or DIFFERENT, run `/cyphor-fix-file` for each, or run the step's prompt again. The prompts do nothing to a file that is already identical, so running one twice is safe.
+The prompts do nothing to a file that is already identical, so running one twice is safe.
 
-Prompt files are a VS Code feature. In another editor, open the prompt file in `.github/prompts/` and paste its text into the chat.
+Prompt files are a VS Code feature. In another editor, open the file in `.github/prompts/` and paste its text into the chat.
 
-## 6. The steps
-
-Each step compiles on its own once the steps before it are in. That is why the order matters.
-
-| Step | What it holds | Copilot prompt | Files | Done when |
-| --- | --- | --- | --- | --- |
-| 1 | Tooling and shared basics | `/cyphor-1-foundation` | 15 | `npx tsc --noEmit` has no errors |
-| 2 | Database, proxy and conversation API | `/cyphor-2-server` | 14 | `npx tsc --noEmit` has no errors, and `npm run test:unit` passes 50 tests |
-| 3 | LLM router, God Mode and chat API | `/cyphor-3-router` | 20 | `npx tsc --noEmit` has no errors, and `npm run test:unit` passes 137 tests |
-| 4 | Screens, components and browser logic | `/cyphor-4-interface` | 117 | `npx tsc --noEmit` has no errors, and `npm run test:unit` passes 170 tests, and `npm run build` succeeds |
-| 5 | Browser tests | `/cyphor-5-tests` | 7 | `npx tsc --noEmit` has no errors (the browser tests are optional and slow: `npm run test:e2e`) |
-
-- Step 1 has 15 files, step 2 has 14, step 3 has 20, step 4 has 117 (counting the 47 shadcn components), step 5 has 7.
-- The test counts are the ones measured when each step was built up from nothing: 50 unit tests after step 2, 137 after step 3 and 170 after step 4. If your project already had other tests, your totals differ.
-- Not in any step, and optional: the project docs, the single-file preview build and the design skills for Claude Code. They are listed in [FILE-MAP.md](./FILE-MAP.md). Copy them with Path A if you want them.
-- The whole list, file by file with what each one does, is in [FILE-MAP.md](./FILE-MAP.md).
-
-## 7. Prove it worked
-
-Run these in the project folder. All five should pass.
-
-| Check | Command | Passing looks like |
-| --- | --- | --- |
-| Files | `node docs/tools/verify-files.mjs` | The last line says `Result: every required file is in place and matches the reference.` A settings file marked `REVIEW` is normal when you kept your own settings. Exit code 0. |
-| Types | `npx tsc --noEmit` | No output at all. |
-| Unit tests | `npm run test:unit` | `pass 170` and `fail 0` (with everything applied). |
-| Build | `npm run build` | Ends with the route list and no error. |
-| By eye | `npm run dev`, open http://localhost:3000 | A "new chat" screen. Send a message: with no keys set, the built-in demo model answers. |
-
-Optional, takes a few minutes and downloads a browser the first time: `npx playwright install chromium`, then `npm run test:e2e`. See [TESTING.md](./TESTING.md).
-
-To use real providers, put your keys in a file named `LLM.env` next to `package.json`, then open **Settings > Router**. See [ENV-AND-SECURITY.md](./ENV-AND-SECURITY.md). Never attach `LLM.env` to a chat.
-
-## 8. Why Copilot skips changes, and what to do
-
-Nobody can see from here what happened in your editor, so these are the usual causes, with the fix for each.
+**Why Copilot skips changes, and what to do**
 
 | What goes wrong | Why | What to do |
 | --- | --- | --- |
-| Copilot explains what to change but nothing changes | Ask mode cannot edit files | Switch to **Agent** mode |
-| It says "done" but files are unchanged | It listed edits you did not keep, the files are not saved, or it never made them | Keep the edits, save, and run the checker. Believe the checker, not the message |
-| Files look similar but not the same | It rewrote them from a description, so parts were dropped or "improved" | Have it **copy** the reference file with a terminal command. The prompts say so |
-| Only the first few files change | A long list in one request is too much for it to hold | One step at a time, and `/cyphor-fix-file` for strays |
-| It cannot find the reference files | The unzipped folder is not open in the workspace | Add it to the workspace (section 5) |
+| It explains what to change but nothing changes | Ask mode cannot edit files | Switch to **Agent** mode |
+| It says "done" but files are unchanged | The edits were not kept or saved, or never made | Keep the edits, save, and run the checker. Believe the checker, not the message |
+| Files look similar but are not the same | It rewrote them from a description, so parts were dropped or "improved" | Have it **copy** the reference file with a terminal command. The prompts say so |
+| Only the first few files change | A long list in one request is too much for it to hold | Run `/cyphor-1-apply` again, then `/cyphor-fix-file` for strays |
+| It cannot find the reference files | The unzipped folder is not open in the workspace | Add it to the workspace (step 2 above) |
 | It ignores the project rules | `AGENTS.md` and `.github/copilot-instructions.md` are not in the project root | Check section 3 |
-| It edits a file you wanted to keep | No backup, no review | Section 2, and review each edit before keeping it |
 
-The checker is the referee. It compares each file in your folder with the reference by fingerprint (SHA-256 of the file with line endings read as LF, so Windows and macOS copies of the same file match) and prints OK, MISSING, DIFFERENT or REVIEW.
+## 6. What the checker prints
 
-## 9. Special cases
+```bash
+node docs/tools/verify-files.mjs                          # the whole report
+node docs/tools/verify-files.mjs --only router            # one group: foundation, server, router, interface, e2e, docs, preview, tooling
+node docs/tools/verify-files.mjs --list missing           # only the paths that are missing
+node docs/tools/verify-files.mjs --list different         # only the paths whose content differs
+node docs/tools/verify-files.mjs --json                   # the same report as JSON
+```
 
-- **`middleware.ts` next to `proxy.ts`.** Next.js 16 stops with "Both middleware file ... and proxy file ... are detected" when both exist. Cyphor uses `proxy.ts`. Move anything you need from your `middleware.ts` into `proxy.ts`, then remove `middleware.ts`. The checker warns about it.
-- **A `src/` folder, `pages/` or `app/` in two places.** Cyphor keeps `app/`, `components/`, `lib/` and `db/` in the project root. A second `src/app` or a `pages/` router next to it will fight with it. The checker warns about both.
-- **Your own packages.** Keep them in `package.json`; section 4, step 3.
-- **An existing database.** Cyphor creates its own tables in `.data/cyphor.db` the first time it runs and does not touch other files. See [ARCHITECTURE.md](./ARCHITECTURE.md).
-- **`.gitignore`.** It must keep `LLM.env`, `.env.llm` and `.env.local` out of git. The checker fails if it does not.
-- **Something else went wrong.** [TROUBLESHOOTING.md](./TROUBLESHOOTING.md).
+It only reads. It never opens `LLM.env` or any other `.env` file. Each file is compared by a SHA-256 fingerprint with line endings read as LF, so Windows and macOS copies of the same file match.
 
-## Appendix: the packages in `package.json`
-
-If you merge `package.json` by hand, this is what the delivered one asks for. The versions are ranges; `package-lock.json` pins the exact ones that were tested.
-
-**dependencies** (27)
-
-| Package | Version range |
+| Status | Meaning |
 | --- | --- |
-| `@fontsource-variable/atkinson-hyperlegible-next` | `^5.3.0` |
-| `@fontsource-variable/literata` | `^5.3.0` |
-| `@fontsource-variable/schibsted-grotesk` | `^5.3.0` |
-| `@fontsource-variable/spline-sans-mono` | `^5.3.0` |
-| `@gsap/react` | `^2.1.2` |
-| `@libsql/client` | `^0.18.0` |
-| `@tailwindcss/postcss` | `^4.3.3` |
-| `class-variance-authority` | `^0.7.1` |
-| `clsx` | `^2.1.1` |
-| `cmdk` | `^1.1.1` |
-| `drizzle-orm` | `^0.45.4` |
-| `gsap` | `^3.15.0` |
-| `highlight.js` | `^11.12.0` |
-| `lucide-react` | `^1.62.0` |
-| `next` | `^16.4.3` |
-| `radix-ui` | `^1.8.1` |
-| `react` | `^19.3.1` |
-| `react-dom` | `^19.3.1` |
-| `react-hook-form` | `^7.91.0` |
-| `react-markdown` | `^10.1.0` |
-| `react-resizable-panels` | `^4.15.0` |
-| `remark-gfm` | `^4.0.1` |
-| `sonner` | `^2.0.8` |
-| `tailwind-merge` | `^3.7.0` |
-| `tw-animate-css` | `^1.4.0` |
-| `vaul` | `^1.1.2` |
-| `zustand` | `^5.0.16` |
+| OK | The file is there and its content is the same as the reference. |
+| MISSING | The file is not there. |
+| DIFFERENT | The file is there but its content is not the same. |
+| REVIEW | A settings file (section 4, step 3) that differs. That is normal when you kept your own settings, and it does not make the check fail. |
 
-**devDependencies** (13)
+The groups are `foundation` (settings and shared types), `server` (database, sign-in, the gate, the conversation API), `router` (providers, God Mode, thinking, the chat API), `interface` (screens, components, the city, themes, artifacts, and their unit tests), `e2e` (browser tests), and three optional ones: `docs`, `preview` (a single-file preview build) and `tooling` (design skills for Claude Code). The app runs without the optional ones.
 
-| Package | Version range |
-| --- | --- |
-| `@axe-core/playwright` | `^4.14.0` |
-| `@playwright/test` | `^1.64.1` |
-| `@tailwindcss/vite` | `^4.3.3` |
-| `@types/node` | `^26.6.5` |
-| `@types/react` | `^19.3.0` |
-| `@types/react-dom` | `^19.3.0` |
-| `@vitejs/plugin-react` | `^6.1.2` |
-| `drizzle-kit` | `^0.31.11` |
-| `shadcn` | `^4.23.0` |
-| `tailwindcss` | `^4.3.3` |
-| `typescript` | `^7.0.2` |
-| `vite` | `^8.3.5` |
-| `vite-plugin-singlefile` | `^2.3.4` |
+## 7. If you used the first version of this pack
+
+The first pack described an older app (no sign-in, a local SQLite file). Its files are stale, and Copilot would be misled by them. This pack does not overwrite them, so delete them once you are sure you did not change them (look at them in git first):
+
+```bash
+rm -f .github/prompts/cyphor-1-foundation.prompt.md .github/prompts/cyphor-2-server.prompt.md \
+  .github/prompts/cyphor-3-router.prompt.md .github/prompts/cyphor-4-interface.prompt.md \
+  .github/prompts/cyphor-5-tests.prompt.md .github/prompts/cyphor-6-final-check.prompt.md
+rm -f docs/API.md docs/ARCHITECTURE.md docs/ENV-AND-SECURITY.md docs/FILE-MAP.md docs/README.md \
+  docs/ROUTER-AND-GOD-MODE.md docs/TESTING.md docs/TROUBLESHOOTING.md docs/UI-AND-DESIGN.md
+```
+
+On Windows, delete the same files in File Explorer or with `Remove-Item`. The prompts `cyphor-0-audit` and `cyphor-fix-file`, the five files in `.github/instructions/`, `.github/copilot-instructions.md`, `AGENTS.md`, `docs/APPLY-GUIDE.md`, `docs/manifest.json` and `docs/tools/verify-files.mjs` keep their names and are replaced by the new ones.
+
+**Your old chats.** The first version kept chats in the browser (and in a local SQLite file, which the new app does not read). The new app gives the browser copy to the first account that signs in on that browser at the same address: it moves the copy, so a second person on the same browser does not get it. From then on a copy of each chat is also kept in your Postgres database (`README.md`, "Good to know"). If you open the new app at another address (another port or domain), the browser copy is not there. In that case export a backup from the old app before you switch and import it in the new one. The backup format did not change (`version: 1`), but a backup from the first version was not tried here.
+
+## 8. If something fails
+
+| What you see | What it means | What to do |
+| --- | --- | --- |
+| `Node ... is too old` | The project needs >=22.18 | Install a newer Node, then `npm install` again |
+| `package.json is missing N packages` | Your `package.json` does not list packages the app needs | Take the zip's `package.json` and `package-lock.json` (section 4, step 3), or add the packages the checker names, then `npm install` |
+| `dependencies are not installed` | There is no `node_modules` folder | `npm install` in the project root |
+| `.gitignore does not ignore ...` | A key file could be committed by accident | Add each name on its own line: `LLM.env`, `.env.llm`, `.env.local` |
+| `middleware.ts exists next to proxy.ts` | Next.js 16 stops with "Both middleware file ... and proxy file ... are detected" when both exist | Move what you need from `middleware.ts` into `proxy.ts`, then remove `middleware.ts` |
+| `src/app exists` or `pages/api exists` | A second source tree next to the project's | Cyphor keeps `app/`, `components/`, `lib/` and `db/` in the project root. Merge or remove the other one |
+| `N of M Copilot and docs files are not in the project` | The hidden `.github` folder did not come along | Copy it with the terminal command in section 3 |
+| `npx tsc` prints errors | Files are missing or different, or `npm install` has not run | Run the checker, copy what it lists, then run `npx tsc --noEmit --incremental false` again |
+| `npm run build` prints the route list, then stops with `SecurityFatalError` | Next.js noticed that the installed version has known security advisories. The build itself worked | Run it again. Updating Next.js (`npm update next`) removes the cause; `README.md` ("Good to know") says why it was not done for you |
+| The unit tests report fewer than 355 passes | Some test files or files they test are missing | Run the checker and copy what it lists |
+| The app starts but sign-in or saving fails | Not a file problem: the database or the secret is not set up | `README.md`, "Start here" and "Make the Neon database"; `.env.example` lists every setting |
+
+If a check still fails, run `/cyphor-fix-file` for the file named in the first error, or paste the first error into Copilot Chat together with `docs/ACCEPTANCE.md`.

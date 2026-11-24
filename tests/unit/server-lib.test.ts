@@ -1,16 +1,12 @@
 /**
  * The small server pieces the API routes stand on: retrying, rate limiting, checking what a client
- * sends, and the database that keeps conversations (including opening one made by an older version).
+ * sends, and the Postgres database that keeps accounts and conversations (run here on PGlite, which speaks the same SQL as Neon).
  */
 import assert from "node:assert/strict"
-import { mkdtempSync, rmSync } from "node:fs"
-import { tmpdir } from "node:os"
-import { join } from "node:path"
 import { afterEach, describe, test } from "node:test"
-import { createClient } from "@libsql/client"
-import { eq } from "drizzle-orm"
-import { getTableConfig } from "drizzle-orm/sqlite-core"
-import { BOOTSTRAP_SQL, openDatabase, schema } from "../../db/index.ts"
+import { eq, sql } from "drizzle-orm"
+import { getTableConfig } from "drizzle-orm/pg-core"
+import { createTables, DatabaseNotConfiguredError, databaseKind, openDatabase, schema, withNeonSsl, type OpenedDatabase } from "../../db/index.ts"
 import { checkChatRequest, checkMeta, chatToRows, messageToRow, rowsToChat } from "../../lib/chat-messages.ts"
 import { clientIp, createRateLimiter, envInt, rateLimitHeaders } from "../../lib/rate-limit.ts"
 import { backoffDelay, HttpError, isAbort, isRetryableStatus, parseRetryAfter, withRetry } from "../../lib/retry.ts"
@@ -344,59 +340,72 @@ describe("checking a chat request", () => {
 /* ---------------------------------------------------------------- */
 
 describe("the database", () => {
-  const dirs: string[] = []
-  const tempDb = () => {
-    const dir = mkdtempSync(join(tmpdir(), "cyphor-db-"))
-    dirs.push(dir)
-    return `file:${join(dir, "test.db")}`
+  const opened: OpenedDatabase[] = []
+  const memory = async () => {
+    const o = await openDatabase("pglite://memory")
+    opened.push(o)
+    return o
   }
-  afterEach(() => {
-    if (process.platform === "win32") return
-    for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true })
+  afterEach(async () => {
+    for (const o of opened.splice(0)) await o.close()
   })
 
+  const columnsOf = async (o: OpenedDatabase, table: string) => {
+    const res = (await o.db.execute(sql`select column_name, is_nullable from information_schema.columns where table_schema = 'public' and table_name = ${table}`)) as unknown as { rows: { column_name: string; is_nullable: string }[] }
+    return res.rows.map((r) => ({ name: r.column_name, notNull: r.is_nullable === "NO" }))
+  }
+
   test("the tables made on first use have exactly the columns the code expects", async () => {
-    const { client } = await openDatabase("file::memory:")
-    for (const table of [schema.conversations, schema.messages]) {
+    const o = await memory()
+    for (const table of [schema.user, schema.session, schema.account, schema.verification, schema.conversations, schema.messages]) {
       const cfg = getTableConfig(table)
-      const info = await client.execute(`PRAGMA table_info(${cfg.name})`)
-      const actual = info.rows.map((r) => ({ name: String(r.name), notNull: Number(r.notnull) === 1 || Number(r.pk) > 0 }))
+      const actual = await columnsOf(o, cfg.name)
       const expected = cfg.columns.map((c) => ({ name: c.name, notNull: c.notNull }))
       assert.deepEqual(actual.map((c) => c.name).sort(), expected.map((c) => c.name).sort(), `${cfg.name}: same columns`)
       for (const col of expected) assert.equal(actual.find((c) => c.name === col.name)!.notNull, col.notNull, `${cfg.name}.${col.name}: same NOT NULL`)
     }
-    client.close()
   })
 
-  test("opens a database made before replies kept their route, and adds the column without losing a row", async () => {
-    const url = tempDb()
-    const old = createClient({ url })
-    try {
-      await old.batch(
-        BOOTSTRAP_SQL.map((sql) => sql.replace("    meta TEXT,\n", "")),
-        "write"
-      )
-      assert.ok(!(await old.execute("PRAGMA table_info(messages)")).rows.some((r) => r.name === "meta"), "the old table has no meta column")
-      await old.execute("INSERT INTO conversations (id, owner_id, title, model, created_at, updated_at) VALUES ('c1','o1','Old chat','m',1,2)")
-      await old.execute("INSERT INTO messages (conversation_id, id, role, content, created_at) VALUES ('c1','m1','user','still here',1)")
-    } finally {
-      old.close()
-    }
+  test("making the tables again changes nothing and loses nothing", async () => {
+    const o = await memory()
+    await o.db.insert(schema.user).values({ id: "u1", name: "Ada", email: "ada@example.com" })
+    await createTables(o.db)
+    await createTables(o.db)
+    const users = await o.db.select().from(schema.user)
+    assert.deepEqual(users.map((u) => u.email), ["ada@example.com"])
+  })
 
-    const { db, client } = await openDatabase(url)
-    try {
-      assert.ok((await client.execute("PRAGMA table_info(messages)")).rows.some((r) => r.name === "meta"), "the column was added")
-      const rows = await db.select().from(schema.messages)
-      assert.equal(rows.length, 1)
-      assert.equal(rows[0].content, "still here")
-      assert.equal(rows[0].meta, null)
-    } finally {
-      client.close()
-    }
+  test("says what to do when no database is set", async () => {
+    await assert.rejects(
+      () => openDatabase(null),
+      (e) => e instanceof DatabaseNotConfiguredError && e.code === "db_not_configured" && /DATABASE_URL/.test(e.message)
+    )
+  })
+
+  test("tells a Neon address from a local one, and adds the encryption Neon needs", () => {
+    assert.equal(databaseKind("postgresql://u:p@ep-cool-1234.us-east-2.aws.neon.tech/neondb"), "postgres")
+    assert.equal(databaseKind("postgres://u:p@localhost:5432/app"), "postgres")
+    assert.equal(databaseKind("pglite://memory"), "pglite")
+    assert.equal(databaseKind("PGLITE://./.data/pg"), "pglite")
+    const mode = (url: string) => new URL(withNeonSsl(url)).searchParams.get("sslmode")
+    assert.equal(mode("postgresql://u:p@ep-cool-1234.us-east-2.aws.neon.tech/neondb"), "verify-full", "a Neon address without sslmode gets one")
+    assert.equal(mode("postgresql://u:p@ep-x-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"), "verify-full", "the string Neon shows is upgraded")
+    assert.equal(new URL(withNeonSsl("postgresql://u:p@ep-x-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require")).searchParams.get("channel_binding"), "require", "and keeps its other settings")
+    for (const m of ["prefer", "verify-ca", "REQUIRE"]) assert.equal(mode(`postgresql://u:p@ep-x.neon.tech/neondb?sslmode=${m}`), "verify-full", m)
+    const asWritten = [
+      "postgresql://u:p@ep-x.neon.tech/neondb?sslmode=verify-full",
+      "postgresql://u:p@ep-x.neon.tech/neondb?sslmode=disable",
+      "postgresql://u:p@ep-x.neon.tech/neondb?uselibpqcompat=true&sslmode=require",
+      "postgres://u:p@localhost:5432/app",
+      "postgres://u:p@localhost:5432/app?sslmode=require",
+    ]
+    for (const url of asWritten) assert.equal(withNeonSsl(url), url, `${url} is left exactly as written`)
+    assert.equal(withNeonSsl("not a url"), "not a url")
   })
 
   test("saves a reply with its route and brings it back through the same code the API uses", async () => {
-    const { db, client } = await openDatabase("file::memory:")
+    const { db } = await memory()
+    await db.insert(schema.user).values({ id: "owner-1", name: "Ada", email: "ada@example.com" })
     const user: Message = { id: "u1", parentId: null, role: "user", content: "Hi", createdAt: 1, childIds: ["a1"], activeChildId: "a1" }
     const reply: Message = { id: "a1", parentId: "u1", role: "assistant", content: "Hello", createdAt: 2, childIds: [], activeChildId: null, status: "done", route: route as Message["route"], sources: [{ title: "P", url: "https://example.com" }] }
     const chat: Chat = { id: "c1", title: "T", createdAt: 1, updatedAt: 2, starred: true, projectId: null, model: "cyphor-auto", nodes: { u1: user, a1: reply }, rootChildIds: ["u1"], rootActiveId: "u1" }
@@ -415,6 +424,23 @@ describe("the database", () => {
     // Deleting a conversation takes its messages with it.
     await db.delete(schema.conversations).where(eq(schema.conversations.id, "c1"))
     assert.equal((await db.select().from(schema.messages)).length, 0)
-    client.close()
+  })
+
+  test("a conversation needs an owner, and deleting the account deletes the chats with it", async () => {
+    const { db } = await memory()
+    const chat: Chat = { id: "c9", title: "T", createdAt: 1, updatedAt: 2, starred: false, projectId: null, model: "cyphor-auto", nodes: {}, rootChildIds: [], rootActiveId: null }
+    await assert.rejects(() => db.insert(schema.conversations).values(chatToRows("nobody", chat).conversation), "no such user")
+
+    await db.insert(schema.user).values({ id: "owner-2", name: "Lin", email: "lin@example.com" })
+    await db.insert(schema.conversations).values(chatToRows("owner-2", chat).conversation)
+    assert.equal((await db.select().from(schema.conversations)).length, 1)
+    await db.delete(schema.user).where(eq(schema.user.id, "owner-2"))
+    assert.equal((await db.select().from(schema.conversations)).length, 0)
+  })
+
+  test("two accounts cannot share an email address", async () => {
+    const { db } = await memory()
+    await db.insert(schema.user).values({ id: "a", name: "A", email: "same@example.com" })
+    await assert.rejects(() => db.insert(schema.user).values({ id: "b", name: "B", email: "same@example.com" }))
   })
 })

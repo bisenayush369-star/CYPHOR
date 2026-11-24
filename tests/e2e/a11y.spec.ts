@@ -37,6 +37,26 @@ for (const scheme of ["light", "dark"] as const) {
       await scan(page, "artifact")
     })
 
+    test("an artifact's code view", async ({ page }) => {
+      await send(page, ARTIFACT_PROMPT)
+      await waitForReply(page)
+      if (!isDocked(page)) await page.getByRole("button", { name: /^Open .*(caesar|cipher)/i }).first().click()
+      const panel = artifactPanel(page)
+      await expect(panel).toBeVisible()
+      await expect(panel.getByRole("radio", { name: "Code" })).toBeEnabled()
+      await panel.getByRole("radio", { name: "Code" }).click()
+      await expect(panel.getByLabel("Artifact source")).toBeVisible()
+      await scan(page, "artifact code view")
+    })
+
+    test("a preview that has an error", async ({ page }) => {
+      await send(page, "Show me a preview that breaks")
+      await waitForReply(page)
+      if (!isDocked(page)) await page.getByRole("button", { name: /^Open Counter/ }).first().click()
+      await expect(artifactPanel(page).getByRole("alert")).toBeVisible({ timeout: 30_000 })
+      await scan(page, "preview error")
+    })
+
     test("the command palette", async ({ page }) => {
       test.skip(!isDocked(page), "opened from the drawer on small screens, which the phone run of other states covers")
       await page.keyboard.press("Control+k")

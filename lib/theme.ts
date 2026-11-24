@@ -13,7 +13,7 @@ export function applyThemeDom(pref: ThemePref) {
   root.dataset.theme = t
   root.style.colorScheme = t
   const meta = document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')
-  meta.forEach((m) => m.setAttribute("content", t === "dark" ? "#171c1e" : "#f5f3ee"))
+  meta.forEach((m) => m.setAttribute("content", t === "dark" ? "#090b12" : "#eceff5"))
 }
 
 export function applyAppearance(font: ChatFont, effects: EffectsLevel) {

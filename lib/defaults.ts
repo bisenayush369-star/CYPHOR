@@ -1,5 +1,6 @@
 import type { ResponseStyle, Settings } from "./types"
 import { DEFAULT_MODELS, DEFAULT_MODEL_ID } from "./models/page"
+import { DEFAULT_EFFORT } from "./router/effort"
 
 export const BUILTIN_STYLES: ResponseStyle[] = [
   {
@@ -80,6 +81,9 @@ export const STARTERS = [
       "Build a small Caesar cipher tool I can try in the browser",
       "Design a landing page for a coffee roaster",
       "Draw an SVG badge with a cipher wheel",
+      "Make a React component that charts letter frequency",
+      "Draw a flowchart of how a Caesar encoder works",
+      "Show me a preview that breaks",
     ],
   },
   {
@@ -104,9 +108,12 @@ export const STARTERS = [
 
 export const DEFAULT_SETTINGS: Settings = {
   displayName: "",
-  theme: "system",
-  chatFont: "serif",
+  theme: "dark",
+  chatFont: "sans",
   effects: "full",
+  palette: "night-city",
+  scene: "city",
+  sceneChosen: false,
   sendWithEnter: true,
   expandThinking: false,
 
@@ -123,13 +130,12 @@ export const DEFAULT_SETTINGS: Settings = {
   customStyles: [],
 
   webSearch: false,
-  extendedThinking: false,
+  effort: DEFAULT_EFFORT,
   research: false,
   artifacts: true,
   memory: false,
   memories: [],
   connectors: {},
-  incognitoByDefault: false,
   syncHistory: true,
 
   routePriority: "balanced",

@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic"
  * Nothing here returns a key, or any part of one: only the name of the variable that holds it.
  */
 export async function GET(req: Request) {
-  const gate = guard(req, "api", 120, "RATE_LIMIT_API_PER_MIN")
+  const gate = await guard(req, "api", 120, "RATE_LIMIT_API_PER_MIN")
   if (!gate.ok) return gate.response
   const params = new URL(req.url).searchParams
   const refresh = params.get("refresh") === "1"
@@ -29,7 +29,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   // Testing sends a real request to a paid service, so it has the strict allowance of a chat message.
-  const gate = guard(req, "chat", 20, "RATE_LIMIT_CHAT_PER_MIN")
+  const gate = await guard(req, "chat", 20, "RATE_LIMIT_CHAT_PER_MIN")
   if (!gate.ok) return gate.response
   const body = await readJson(req, 2000)
   if (!body.ok) return body.response

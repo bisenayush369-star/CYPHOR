@@ -1,32 +1,33 @@
 import { and, eq } from "drizzle-orm"
-import type { BatchItem } from "drizzle-orm/batch"
 import { getDb, type Db } from "@/db"
 import { conversations, messages, type ConversationRecord } from "@/db/schema"
 import { checkChat, chatToRows, rowsToChat, ID_RE } from "@/lib/chat-messages"
 import { apiError, guard, readJson, type Guarded } from "@/lib/http"
-import { getOwnerId } from "@/proxy"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 type Ctx = { params: Promise<{ id: string }> }
 
-/** Rows inserted per statement. SQLite caps the number of bound values in one statement. */
-const CHUNK = 150
+/** Rows inserted per statement. Postgres caps one statement at 65,535 bound values, and a message has about 14. */
+const CHUNK = 500
 
 type Loaded =
   | { ok: false; response: Response }
   | { ok: true; gate: Extract<Guarded, { ok: true }>; id: string; db: Db; conversation: ConversationRecord | undefined }
 
 async function load(req: Request, ctx: Ctx): Promise<Loaded> {
-  const gate = guard(req, "api", 120, "RATE_LIMIT_API_PER_MIN")
+  const gate = await guard(req, "api", 120, "RATE_LIMIT_API_PER_MIN")
   if (!gate.ok) return { ok: false, response: gate.response }
   const { id } = await ctx.params
   if (!ID_RE.test(id)) return { ok: false, response: apiError(400, "bad_request", "The conversation id is invalid.", gate.headers) }
   const db = await getDb()
-  const [conversation] = await db.select().from(conversations).where(and(eq(conversations.id, id), eq(conversations.ownerId, getOwnerId(req)!))).limit(1)
+  const [conversation] = await db.select().from(conversations).where(and(eq(conversations.id, id), eq(conversations.ownerId, gate.ownerId))).limit(1)
   return { ok: true, gate, id, db, conversation }
 }
+
+/** Thrown inside the save transaction to roll it back when the id belongs to another account. */
+class NotYours extends Error {}
 
 const notFound = (headers: HeadersInit) => apiError(404, "not_found", "That conversation was not found.", headers)
 
@@ -49,29 +50,35 @@ export async function PUT(req: Request, ctx: Ctx) {
   if (!parsed.ok) return apiError(400, "bad_request", parsed.error, l.gate.headers)
   if (parsed.value.id !== l.id) return apiError(400, "bad_request", "The conversation id does not match the address.", l.gate.headers)
 
-  // An id that belongs to someone else is reported like a missing one, so ids cannot be probed.
-  if (!l.conversation) {
-    const [taken] = await l.db.select({ id: conversations.id }).from(conversations).where(eq(conversations.id, l.id)).limit(1)
-    if (taken) return notFound(l.gate.headers)
-  }
-
   const { conversation, messages: rows } = chatToRows(l.gate.ownerId, parsed.value)
-  const statements: BatchItem<"sqlite">[] = [
-    l.db.insert(conversations).values(conversation).onConflictDoUpdate({
-      target: conversations.id,
-      set: {
-        title: conversation.title,
-        starred: conversation.starred,
-        projectId: conversation.projectId,
-        model: conversation.model,
-        rootActiveId: conversation.rootActiveId,
-        updatedAt: conversation.updatedAt,
-      },
-    }),
-    l.db.delete(messages).where(eq(messages.conversationId, l.id)),
-  ]
-  for (let i = 0; i < rows.length; i += CHUNK) statements.push(l.db.insert(messages).values(rows.slice(i, i + CHUNK)))
-  await l.db.batch(statements as [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]])
+  try {
+    await l.db.transaction(async (tx) => {
+      // The update only applies to a row this user owns. An id that belongs to someone else changes nothing and is
+      // reported like a missing one, so ids cannot be probed and nobody's chat can be overwritten.
+      const claimed = await tx
+        .insert(conversations)
+        .values(conversation)
+        .onConflictDoUpdate({
+          target: conversations.id,
+          set: {
+            title: conversation.title,
+            starred: conversation.starred,
+            projectId: conversation.projectId,
+            model: conversation.model,
+            rootActiveId: conversation.rootActiveId,
+            updatedAt: conversation.updatedAt,
+          },
+          setWhere: eq(conversations.ownerId, l.gate.ownerId),
+        })
+        .returning({ id: conversations.id })
+      if (!claimed.length) throw new NotYours()
+      await tx.delete(messages).where(eq(messages.conversationId, l.id))
+      for (let i = 0; i < rows.length; i += CHUNK) await tx.insert(messages).values(rows.slice(i, i + CHUNK))
+    })
+  } catch (e) {
+    if (e instanceof NotYours) return notFound(l.gate.headers)
+    throw e
+  }
 
   return Response.json({ ok: true, updatedAt: conversation.updatedAt, messageCount: rows.length }, { headers: l.gate.headers })
 }
@@ -103,6 +110,9 @@ export async function DELETE(req: Request, ctx: Ctx) {
   const l = await load(req, ctx)
   if (!l.ok) return l.response
   if (!l.conversation) return notFound(l.gate.headers)
-  await l.db.batch([l.db.delete(messages).where(eq(messages.conversationId, l.id)), l.db.delete(conversations).where(eq(conversations.id, l.id))])
+  await l.db.transaction(async (tx) => {
+    await tx.delete(messages).where(eq(messages.conversationId, l.id))
+    await tx.delete(conversations).where(eq(conversations.id, l.id))
+  })
   return Response.json({ ok: true }, { headers: l.gate.headers })
 }

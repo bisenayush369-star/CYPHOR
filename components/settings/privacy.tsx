@@ -16,7 +16,7 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { exportAll } from "@/lib/export"
 import { href, navigate } from "@/lib/route"
 import { STANDALONE } from "@/lib/provider"
-import { useStore } from "@/lib/store"
+import { forgetLocalCopy, useStore } from "@/lib/store"
 import { eraseRemote, useSync, type SyncState } from "@/lib/sync"
 import { useUI } from "@/lib/ui"
 import { downloadBlob } from "@/lib/utils"
@@ -85,7 +85,6 @@ function SyncStatus() {
 }
 
 export function PrivacyTab() {
-  const incognitoDefault = useStore((s) => s.settings.incognitoByDefault)
   const syncHistory = useStore((s) => s.settings.syncHistory)
   const update = useStore((s) => s.updateSettings)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -111,34 +110,21 @@ export function PrivacyTab() {
       description={
         STANDALONE
           ? "Everything Cyphor stores lives in this browser. The only thing that leaves is what you send to your model."
-          : "Chats are kept in this browser and, unless you turn it off, in this app's database. What you send to your model leaves either way."
+          : "Chats are kept in this browser and, unless you turn it off, in your account's database. What you send to your model leaves either way."
       }
     >
       {!STANDALONE && (
-        <Group title="Server copy" hint="A backup of your saved chats in the database behind this app. It belongs to this browser; clearing cookies detaches it.">
+        <Group title="Server copy" hint="A copy of your chats in your account's database, so they follow you to every device you sign in on. Nobody else's account can read it.">
           <ToggleRow
             id="priv-sync"
             label="Save chats on the server"
-            description="Keeps a copy of every non-incognito chat, so a reply finishes saving even if you close the tab."
+            description="Keeps a copy of every chat, so a reply finishes saving even if you close the tab."
             checked={syncHistory}
             onChange={(v) => update({ syncHistory: v })}
           />
           <SyncStatus />
         </Group>
       )}
-
-      <Group title="Incognito">
-        <ToggleRow
-          id="priv-incognito"
-          label="Start new chats in incognito"
-          description="Incognito chats stay in memory. They vanish when you reload and never appear in search, exports or backups."
-          checked={incognitoDefault}
-          onChange={(v) => {
-            update({ incognitoByDefault: v })
-            useUI.getState().setIncognito(v)
-          }}
-        />
-      </Group>
 
       <Group title="Your data" hint="Move or back up your chats and projects as a JSON file. Your API key is never included.">
         <div className="flex flex-wrap gap-2">
@@ -189,15 +175,15 @@ export function PrivacyTab() {
             }}
           />
         </DangerRow>
-        <DangerRow title="Erase everything" description="Clears chats, projects and settings from this browser and reloads the page.">
+        <DangerRow title="Erase everything" description="Clears chats, projects and settings from this browser and from your account's database, then reloads the page.">
           <Confirm
             trigger={<Button variant="destructive" className="max-sm:h-10 pointer-coarse:h-10">Erase everything</Button>}
             title="Erase everything on this device?"
-            description="Chats, projects, settings and your API key will be removed from this browser. Export a backup first if you want to keep anything."
+            description="Chats, projects, settings and your API key will be removed from this browser and from your account's database. Your sign-in stays. Export a backup first if you want to keep anything."
             action="Erase everything"
             onConfirm={() => {
               void eraseRemote().finally(() => {
-                useStore.persist.clearStorage()
+                forgetLocalCopy()
                 location.assign(href.home)
               })
             }}

@@ -6,10 +6,11 @@ import { useStore } from "@/lib/store"
 import { transitionTheme } from "@/lib/theme"
 import type { ChatFont, EffectsLevel, ThemePref } from "@/lib/types"
 import { Group, Pane, RadioCard } from "./parts"
+import { BackgroundGroup, ColourThemeGroup } from "./palette-picker"
 
 const TONES = {
-  light: { bg: "#f5f3ee", side: "#efece4", ink: "#1a211f", mute: "#d4cfc1", pri: "#166657", card: "#fbfaf7" },
-  dark: { bg: "#171c1e", side: "#12171a", ink: "#e8e5dc", mute: "#364146", pri: "#5fb5a3", card: "#20272a" },
+  light: { bg: "#eceff5", side: "#e4e8f0", ink: "#10131c", mute: "#cdd3e0", pri: "#10131c", card: "#f7f8fb" },
+  dark: { bg: "#090b12", side: "#05060b", ink: "#e8ecf6", mute: "#232838", pri: "#fcee09", card: "#0f121b" },
 } as const
 
 /** A tiny drawing of the app in one theme. Colours are fixed on purpose: it shows each theme, not the current one. */
@@ -40,8 +41,8 @@ const FONTS: { id: ChatFont; name: string; note: string; family: string }[] = [
 ]
 
 const EFFECTS: { id: EffectsLevel; name: string; note: string }[] = [
-  { id: "full", name: "Full", note: "Cipher disk, theme sweep, entrances and message transitions." },
-  { id: "subtle", name: "Subtle", note: "Short fades only. Nothing spins or sweeps." },
+  { id: "full", name: "Full", note: "Focus glow, glitch, scanlines, theme sweep, entrances and message transitions." },
+  { id: "subtle", name: "Subtle", note: "Short fades only. Nothing glitches, runs or sweeps." },
   { id: "off", name: "Off", note: "No animation at all." },
 ]
 
@@ -78,7 +79,7 @@ export function AppearanceTab() {
           {THEMES.map((t) => (
             <Label
               key={t.id}
-              className="group/theme flex cursor-pointer flex-col items-stretch gap-2 rounded-xl border bg-card p-2 font-normal transition-colors hover:bg-accent/50 has-[button[data-state=checked]]:border-primary has-[button[data-state=checked]]:bg-primary/5 has-[button:focus-visible]:ring-[3px] has-[button:focus-visible]:ring-ring/50"
+              className="group/theme relative flex cursor-pointer flex-col items-stretch gap-2 rounded-xl border bg-card p-2 font-normal transition-colors hover:bg-accent/50 has-[button[data-state=checked]]:border-primary has-[button[data-state=checked]]:bg-primary/5 has-[button:focus-visible]:ring-[3px] has-[button:focus-visible]:ring-ring/50"
             >
               <RadioGroupItem value={t.id} className="sr-only" />
               <span className="block aspect-[16/10] overflow-hidden rounded-md border">
@@ -99,6 +100,10 @@ export function AppearanceTab() {
         </RadioGroup>
       </Group>
 
+      <BackgroundGroup />
+
+      <ColourThemeGroup />
+
       <Group title="Chat font" hint="Applies to Cyphor's replies. Menus and buttons keep the interface font.">
         <RadioGroup value={font} onValueChange={(v) => update({ chatFont: v as ChatFont })} aria-label="Chat font" className="gap-2">
           {FONTS.map((f) => (
@@ -110,7 +115,7 @@ export function AppearanceTab() {
                 <span className="text-sm font-medium">{f.name}</span>
               </span>
               <span className="mt-1.5 block text-[15px] leading-snug" style={{ fontFamily: f.family }}>
-                Every cipher hides a plain message.
+                Every question finds its model.
               </span>
               <span className="mt-1 block text-[13px] text-muted-foreground">{f.note}</span>
             </RadioCard>

@@ -60,7 +60,7 @@ export function SettingsDialog() {
       >
         <div className="shrink-0 border-b pt-safe">
           <DialogHeader className="flex-row items-center justify-between gap-2 px-4 py-2.5 sm:px-6 sm:py-3">
-            <DialogTitle className="font-serif text-xl font-medium tracking-tight">Settings</DialogTitle>
+            <DialogTitle className="font-display text-xl font-semibold tracking-tight">Settings</DialogTitle>
             <DialogDescription className="sr-only">Change how Cyphor looks, which model it talks to, and what it keeps on this device.</DialogDescription>
             <DialogClose asChild>
               <IconButton label="Close settings" size="icon" className="-mr-1 sm:-mr-2">

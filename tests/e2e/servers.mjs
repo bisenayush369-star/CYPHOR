@@ -9,7 +9,6 @@
  * for that address, only starts testing once all three are ready. No key here is real.
  */
 import { spawn, spawnSync } from "node:child_process"
-import { rmSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 
 const root = fileURLToPath(new URL("../..", import.meta.url))
@@ -27,10 +26,15 @@ const BLANK = [
   "MISTRAL_API_KEY", "META_API_KEY", "LLAMA_API_KEY", "CLOUDFLARE_API_KEY", "CLOUDFLARE_API_TOKEN", "CF_API_TOKEN",
   "AIONLABS_API_KEY", "AION_API_KEY", "LLM_API_KEY", "LLM_BASE_URL", "LLM_MODELS", "LLM_MODEL", "TINYFISH_API_KEY", "TINYFISH_KEY",
   "ANTHROPIC_BASE_URL", "GROQ_BASE_URL", "MISTRAL_BASE_URL", "GEMINI_BASE_URL", "OPENROUTER_BASE_URL", "CYPHOR_BASIC_AUTH",
+  "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "BETTER_AUTH_SECRET", "AUTH_SECRET", "BETTER_AUTH_URL", "APP_URL", "TRUSTED_ORIGINS",
 ].reduce((all, name) => ({ ...all, [name]: "" }), {})
 
 const common = {
   ...BLANK,
+  // Each server keeps its accounts and chats in a Postgres that lives inside its own process (PGlite), so nothing is
+  // shared between runs and no database account is needed. The secret is made up and signs nothing real.
+  BETTER_AUTH_SECRET: "e2e-session-secret-not-real-0123456789abcdef",
+  AUTH_RATE_LIMIT: "off", // every test makes its own account from this one address
   LLM_ENV_DISABLE: "1",
   RATE_LIMIT_CHAT_PER_MIN: "1000",
   RATE_LIMIT_API_PER_MIN: "5000",
@@ -62,7 +66,8 @@ for (const sig of ["SIGINT", "SIGTERM"]) process.on(sig, () => stop(0))
 async function waitFor(url, label) {
   for (let i = 0; i < 240; i++) {
     try {
-      if ((await fetch(url)).ok) return
+      // Any answer that is not a server error means the server is up. Signed out, the API answers 401.
+      if ((await fetch(url)).status < 500) return
     } catch {
       /* not up yet */
     }
@@ -71,9 +76,6 @@ async function waitFor(url, label) {
   console.error(`[servers] ${label} did not start in time`)
   stop(1)
 }
-
-// A fresh database each run, so earlier runs cannot change what a test sees.
-for (const f of ["e2e-demo", "e2e-router"]) for (const ext of ["", "-journal", "-wal", "-shm"]) rmSync(`${root}.data/${f}.db${ext}`, { force: true })
 
 if (process.env.SKIP_BUILD !== "1") {
   console.log("[servers] building")
@@ -86,7 +88,8 @@ await waitFor(`${fake}/health`, "the fake provider")
 
 start(process.execPath, [next, "start", "-p", String(ROUTER), "-H", "127.0.0.1"], {
   ...common,
-  DATABASE_URL: "file:./.data/e2e-router.db",
+  DATABASE_URL: "pglite://memory",
+  BETTER_AUTH_URL: `http://127.0.0.1:${ROUTER}`,
   GROQ_API_KEY: "e2e-groq-key-not-real",
   GROQ_BASE_URL: `${fake}/groq/v1`,
   MISTRAL_API_KEY: "e2e-mistral-key-not-real",
@@ -97,8 +100,8 @@ start(process.execPath, [next, "start", "-p", String(ROUTER), "-H", "127.0.0.1"]
   TINYFISH_SEARCH_URL: `${fake}/tinyfish/search`,
   TINYFISH_FETCH_URL: `${fake}/tinyfish/fetch`,
 })
-await waitFor(`http://127.0.0.1:${ROUTER}/api/models`, "Cyphor with fake providers")
+await waitFor(`http://127.0.0.1:${ROUTER}/login`, "Cyphor with fake providers")
 
-start(process.execPath, [next, "start", "-p", String(DEMO), "-H", "127.0.0.1"], { ...common, DATABASE_URL: "file:./.data/e2e-demo.db" })
-await waitFor(`http://127.0.0.1:${DEMO}/api/models`, "Cyphor in demo mode")
+start(process.execPath, [next, "start", "-p", String(DEMO), "-H", "127.0.0.1"], { ...common, DATABASE_URL: "pglite://memory", BETTER_AUTH_URL: `http://127.0.0.1:${DEMO}` })
+await waitFor(`http://127.0.0.1:${DEMO}/login`, "Cyphor in demo mode")
 console.log(`[servers] ready: demo ${DEMO}, fake providers ${ROUTER}`)

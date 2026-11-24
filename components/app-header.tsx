@@ -1,4 +1,4 @@
-import { ChevronDown, FolderMinus, FolderPlus, Ghost, Layers, Moon, Pencil, Share2, Star, StarOff, Sun, Trash2 } from "lucide-react"
+import { ChevronDown, FolderMinus, FolderPlus, Layers, Moon, Pencil, Share2, Star, StarOff, Sun, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import {
   DropdownMenu,
@@ -11,12 +11,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { collectArtifacts } from "@/lib/parse"
+import { collectArtifacts, mayHaveArtifacts } from "@/lib/parse"
 import { href, navigate, useRoute } from "@/lib/route"
 import { activeThread, useStore } from "@/lib/store"
 import { resolveTheme, transitionTheme } from "@/lib/theme"
 import { useUI } from "@/lib/ui"
-import { cn } from "@/lib/utils"
 import { IconButton } from "./icon-button"
 
 const PAGE_TITLES: Record<string, string> = {
@@ -46,7 +45,6 @@ function ChatTitle({ id }: { id: string }) {
   return (
     <div className="flex min-w-0 items-center gap-1">
       <h1 className="sr-only">{chat.title}</h1>
-      {chat.incognito && <Ghost className="size-4 shrink-0 text-muted-foreground" aria-label="Incognito chat" />}
       <DropdownMenu>
         <DropdownMenuTrigger
           className="flex min-w-0 items-center gap-1 rounded-lg px-2 py-1.5 text-[15px] font-medium transition-colors hover:bg-accent focus-visible:outline-2 data-[state=open]:bg-accent max-sm:min-h-10 pointer-coarse:min-h-10"
@@ -100,14 +98,12 @@ export function AppHeader({ artifactOpen }: { artifactOpen: boolean }) {
   const route = useRoute()
   const theme = useStore((s) => s.settings.theme)
   const updateSettings = useStore((s) => s.updateSettings)
-  const incognito = useUI((s) => s.incognito)
-  const setIncognito = useUI((s) => s.setIncognito)
   const setShareChat = useUI((s) => s.setShareChat)
   const openArtifact = useUI((s) => s.openArtifact)
   const chatId = route.name === "chat" ? route.id : null
   const hasArtifacts = useStore((s) => {
     const c = chatId ? s.chats[chatId] : undefined
-    return !!c && activeThread(c).some((m) => m.role === "assistant" && m.content.includes("<artifact"))
+    return !!c && activeThread(c).some((m) => m.role === "assistant" && mayHaveArtifacts(m.content))
   })
 
   const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -136,16 +132,6 @@ export function AppHeader({ artifactOpen }: { artifactOpen: boolean }) {
       </div>
 
       <div className="flex items-center gap-0.5">
-        {route.name === "home" && (
-          <IconButton
-            label={incognito ? "Turn off incognito chat" : "Start an incognito chat"}
-            pressed={incognito}
-            onClick={() => setIncognito(!incognito)}
-            className={cn(incognito && "bg-accent text-foreground")}
-          >
-            <Ghost />
-          </IconButton>
-        )}
         {chatId && hasArtifacts && !artifactOpen && (
           <IconButton label="Show artifact" onClick={showLatestArtifact}>
             <Layers />

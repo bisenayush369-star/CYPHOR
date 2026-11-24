@@ -17,14 +17,14 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { editMessage, retryMessage } from "@/lib/actions"
-import { collectArtifacts, parseContent, plainText } from "@/lib/parse"
+import { collectArtifacts, mayHaveArtifacts, parseContent, plainText } from "@/lib/parse"
 import { describeModel, useCatalog, useDemoMode } from "@/lib/catalog"
 import { activeThread, siblingsOf, useStore } from "@/lib/store"
 import type { Attachment, Message } from "@/lib/types"
 import { useUI } from "@/lib/ui"
 import { cn, copyText, formatBytes } from "@/lib/utils"
 import { ArtifactCard } from "./artifact-card"
-import { LiveDisk } from "./cipher-disk"
+import { Signal } from "./signal"
 import { IconButton } from "./icon-button"
 import { Markdown } from "./markdown"
 import { CouncilPanel, RouteChip, SourceList } from "./route-info"
@@ -100,11 +100,11 @@ function AttachmentView({ a }: { a: Attachment }) {
       <img
         src={a.dataUrl}
         alt={a.name}
-        className="max-h-56 max-w-full rounded-xl border object-cover sm:max-h-64"
+        className="chamfer max-h-56 max-w-full object-cover [--cut:8px] sm:max-h-64"
         loading="lazy"
       />
     ) : (
-      <div className="flex items-center gap-2 rounded-xl border bg-card px-3 py-2 text-sm text-muted-foreground">
+      <div className="cut cut-sm flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
         <ImageOff className="size-4" aria-hidden />
         <span className="max-w-48 truncate">{a.name}</span>
         <span className="text-xs">not kept after reload</span>
@@ -112,7 +112,7 @@ function AttachmentView({ a }: { a: Attachment }) {
     )
   }
   return (
-    <div className="flex items-center gap-2 rounded-xl border bg-card px-3 py-2 text-sm">
+    <div className="cut cut-sm flex items-center gap-2 px-3 py-2 text-sm">
       <FileText className="size-4 shrink-0 text-muted-foreground" aria-hidden />
       <span className="max-w-48 truncate">{a.name}</span>
       <span className="text-xs text-muted-foreground">{formatBytes(a.size)}</span>
@@ -148,7 +148,7 @@ function EditBox({ chatId, msg, onClose }: { chatId: string; msg: Message; onClo
   }
 
   return (
-    <div className="w-full rounded-2xl border bg-card p-2.5 shadow-sm">
+    <div className="cut cut-lg w-full p-2.5">
       <Textarea
         ref={ref}
         value={text}
@@ -190,7 +190,7 @@ function UserMessage({ chatId, msg, isLast }: { chatId: string; msg: Message; is
       {editing ? (
         <EditBox chatId={chatId} msg={msg} onClose={() => setEditing(false)} />
       ) : msg.content ? (
-        <div className="max-w-[92%] rounded-2xl rounded-br-md bg-bubble px-4 py-2.5 text-[15.5px] leading-[1.55] break-words whitespace-pre-wrap sm:max-w-[84%]">
+        <div className="cut max-w-[92%] px-4 py-2.5 text-[15.5px] leading-[1.55] break-words whitespace-pre-wrap [--edge:color-mix(in_oklab,var(--signal)_28%,var(--border))] [--fill:var(--bubble)] sm:max-w-[84%]">
           {msg.content}
         </div>
       ) : null}
@@ -227,7 +227,7 @@ function AssistantMessage({ chatId, msg, isLast }: { chatId: string; msg: Messag
   const versionCounts = useStore(
     useShallow((s) => {
       const chat = s.chats[chatId]
-      if (!chat || !msg.content.includes("<artifact")) return {} as Record<string, number>
+      if (!chat || !mayHaveArtifacts(msg.content)) return {} as Record<string, number>
       const out: Record<string, number> = {}
       for (const h of collectArtifacts(activeThread(chat))) {
         const n = h.versions.findIndex((v) => v.messageId === msg.id)
@@ -251,6 +251,7 @@ function AssistantMessage({ chatId, msg, isLast }: { chatId: string; msg: Messag
               chatId={chatId}
               artifact={seg.artifact}
               versions={versionCounts[seg.artifact.identifier] ?? 1}
+              streaming={streaming}
             />
           )
         })}
@@ -258,7 +259,7 @@ function AssistantMessage({ chatId, msg, isLast }: { chatId: string; msg: Messag
 
       {streaming && (
         <div className="mt-3 flex items-center gap-2 font-sans text-sm text-muted-foreground" aria-hidden>
-          <LiveDisk labels={false} className="size-5 text-primary" />
+          <Signal className="text-signal" />
           <span className="shimmer">{msg.content ? "Writing" : "Thinking"}</span>
           {msg.route && !msg.council && (
             <span className="truncate text-xs">
@@ -275,7 +276,7 @@ function AssistantMessage({ chatId, msg, isLast }: { chatId: string; msg: Messag
       ) : null}
 
       {msg.status === "error" && (
-        <div role="alert" className="mt-3 flex items-start gap-2.5 rounded-xl border border-destructive/30 bg-destructive/5 p-3 font-sans text-sm">
+        <div role="alert" className="cut cut-sm mt-3 flex items-start gap-2.5 p-3 font-sans text-sm [--edge:color-mix(in_oklab,var(--heat)_55%,var(--border))] [--fill:color-mix(in_oklab,var(--heat)_8%,var(--card))]">
           <AlertCircle className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
           <div className="min-w-0 flex-1">
             <p className="font-medium text-destructive">Couldn't get a reply</p>

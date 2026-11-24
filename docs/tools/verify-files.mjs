@@ -4,7 +4,7 @@
  *
  *   node docs/tools/verify-files.mjs                 check the current folder (run it in the project root)
  *   node docs/tools/verify-files.mjs ../my-project   check another folder
- *   node docs/tools/verify-files.mjs --only server   check one step (foundation, server, router, interface, e2e)
+ *   node docs/tools/verify-files.mjs --only server   check one group (foundation, server, router, interface, e2e, docs, preview, tooling)
  *   node docs/tools/verify-files.mjs --list missing  print only the paths that are missing, one per line
  *   node docs/tools/verify-files.mjs --json          the same report as JSON (for scripts and for Copilot)
  *
@@ -29,7 +29,7 @@ Usage
   folder            the project root to check (the folder that holds package.json). Default: the current folder.
 
 Options
-  --only <names>    only these steps or paths. Steps: foundation, server, router, interface, e2e, docs, preview, tooling.
+  --only <names>    only these groups or paths. Groups: foundation, server, router, interface, e2e, docs, preview, tooling.
                     Paths: a file or a folder prefix such as lib/router/. Separate several with commas.
   --list <status>   print just the paths with this status, one per line: missing, different, review or ok.
   --json            print the whole report as JSON.
@@ -240,7 +240,7 @@ function otherChecks(root, manifest) {
   if (unprotected.length === 0) add("ok", ".gitignore keeps LLM.env, .env.llm and .env.local out of git")
   else add("fail", `.gitignore does not ignore ${unprotected.join(", ")}`, "add each name on its own line, so your keys can never be committed")
   if (existsSync(join(root, "LLM.env"))) add("info", "LLM.env is present", "its content was not read")
-  else add("info", "LLM.env is not present", "without it the app answers with the built-in demo model. docs/ENV-AND-SECURITY.md says how to add your keys.")
+  else add("info", "LLM.env is not present", "without it the app answers with the built-in demo model. README.md (Connect your AI providers) says how to add your keys.")
 
   // Things from an older setup that can clash with this project
   const clash = (path, detail) => {
@@ -287,7 +287,7 @@ function buildReport(opts) {
   const known = new Set(manifest.steps.map((s) => s.id))
   for (const o of opts.only) {
     if (!known.has(o) && !manifest.files.some((f) => f.path === o || f.path.startsWith(o.endsWith("/") ? o : `${o}/`))) {
-      fail(`--only "${o}" matches no step and no path. Steps: ${[...known].join(", ")}`)
+      fail(`--only "${o}" matches no group and no path. Groups: ${[...known].join(", ")}`)
     }
   }
 
@@ -343,7 +343,7 @@ function printReport(opts, rep) {
   out()
   const w = Math.max(...steps.map((s) => (s.number ? `${s.number} ${s.id}` : s.id).length)) + 2
   const w2 = Math.max(14, ...steps.map((s) => tallyText(s.required).length)) + 2
-  out(`${cell("Step", w)}${cell("Required files", w2)}Optional files`)
+  out(`${cell("Group", w)}${cell("Required files", w2)}Optional files`)
   for (const s of steps) {
     if (s.required.total + s.optional.total === 0) continue
     const label = s.number ? `${s.number} ${s.id}` : s.id
@@ -377,12 +377,11 @@ function printReport(opts, rep) {
   if (rep.ok) {
     out(review.length ? `Result: every required file is in place. ${plural(review.length, "settings file")} differ, so look at ${review.length === 1 ? "it" : "them"} by hand.` : "Result: every required file is in place and matches the reference.")
   } else {
-    const first = steps.find((s) => s.number && (s.required.missing > 0 || s.required.different > 0))
     const parts = []
     if (rep.needs.length) parts.push(`${plural(rep.needs.length, "required file")} need attention`)
     if (rep.failedChecks.length) parts.push(`${plural(rep.failedChecks.length, "check")} failed`)
     out(`Result: ${parts.join(" and ")}.`)
-    if (first && first.prompt) out(`Start with step ${first.number} (${first.title}): in Copilot Chat run /${first.prompt}, or copy those files from the reference folder.`)
+    if (rep.needs.length && manifest.applyPrompt) out(`To fix the files: in Copilot Chat run /${manifest.applyPrompt}, or copy them from the reference folder with the commands in docs/APPLY-GUIDE.md.`)
   }
 }
 

@@ -61,7 +61,7 @@ export const CodeBlock = memo(function CodeBlock({ language, code, bare, classNa
   }
 
   return (
-    <div className={cn("md-block overflow-hidden rounded-xl border bg-code", className)}>
+    <div className={cn("md-block cut overflow-hidden [--fill:var(--code)]", className)}>
       {!bare && (
         <div className="flex items-center justify-between gap-2 border-b bg-muted/50 py-1 pr-1.5 pl-3.5">
           <span className="font-mono text-xs text-muted-foreground">{language || "text"}</span>

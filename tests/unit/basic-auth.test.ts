@@ -1,6 +1,6 @@
 /**
- * The optional shared password: how the setting is read, how a sign-in is checked, and what the proxy does
- * with both. Every name and password in here is made up.
+ * The optional shared password (how the setting is read, how a sign-in is checked) and the proxy that stands in
+ * front of the app: the shared password, the sign-in check, the cross-site check. Every name and password in here is made up.
  */
 import assert from "node:assert/strict"
 import { afterEach, beforeEach, describe, test } from "node:test"
@@ -11,6 +11,9 @@ import { proxy } from "../../proxy.ts"
 const USER = "tester"
 const PASSWORD = "not-a-real-password"
 const setting = `${USER}:${PASSWORD}`
+
+/** The cookie a signed-in browser carries. The proxy only checks that it is there; the routes check that it is real. */
+const SIGNED_IN = "cyphor.session_token=abc.def"
 
 /** What a browser sends once someone has typed a name and a password. */
 const basic = (user: string, password: string) => `Basic ${Buffer.from(`${user}:${password}`, "utf8").toString("base64")}`
@@ -82,10 +85,12 @@ describe("the proxy with a shared password", () => {
     delete registry.__cyphorLimiters
   })
 
-  const call = (path: string, init: { auth?: string; ip?: string; method?: string; origin?: string } = {}) => {
+  // These tests are about the shared password, so the caller is signed in unless a test says otherwise.
+  const call = (path: string, init: { auth?: string; ip?: string; method?: string; origin?: string; cookie?: string | null } = {}) => {
     const headers: Record<string, string> = { host: "localhost:3000", "x-forwarded-for": init.ip ?? "203.0.113.7" }
     if (init.auth) headers.authorization = init.auth
     if (init.origin) headers.origin = init.origin
+    if (init.cookie !== null) headers.cookie = init.cookie ?? SIGNED_IN
     return proxy(new NextRequest(`http://localhost:3000${path}`, { method: init.method ?? "GET", headers }))
   }
   /** Next.js marks a request it should carry on with. Everything else here is an answer from the proxy itself. */
@@ -113,10 +118,16 @@ describe("the proxy with a shared password", () => {
     assert.deepEqual(await res.json(), { error: { code: "unauthorized", message: "Sign in to use Cyphor." } })
   })
 
-  test("lets the right password through and still hands out the visitor cookie", async () => {
+  test("lets the right password through", async () => {
     const res = await call("/api/models", { auth: basic(USER, PASSWORD) })
     assert.equal(letThrough(res), true)
-    assert.match(res.headers.get("set-cookie") ?? "", /cyphor_owner=/)
+    assert.equal(res.headers.get("set-cookie"), null, "the proxy sets no cookies; signing in does")
+  })
+
+  test("asks for the shared password before it asks for a sign-in", async () => {
+    const res = await call("/chat", { cookie: null })
+    assert.equal(res.status, 401)
+    assert.ok(res.headers.get("www-authenticate"))
   })
 
   test("turns a wrong password away with a 401", async () => {
@@ -164,5 +175,78 @@ describe("the proxy with a shared password", () => {
     assert.equal(res.status, 403)
     const same = await call("/api/chat", { method: "POST", auth: basic(USER, PASSWORD), origin: "http://localhost:3000" })
     assert.equal(letThrough(same), true)
+  })
+})
+
+describe("the proxy and signing in", () => {
+  const saved = process.env.CYPHOR_BASIC_AUTH
+  beforeEach(() => void delete process.env.CYPHOR_BASIC_AUTH)
+  afterEach(() => {
+    if (saved === undefined) delete process.env.CYPHOR_BASIC_AUTH
+    else process.env.CYPHOR_BASIC_AUTH = saved
+  })
+
+  const call = (path: string, init: { method?: string; origin?: string; cookie?: string } = {}) => {
+    const headers: Record<string, string> = { host: "localhost:3000" }
+    if (init.origin) headers.origin = init.origin
+    if (init.cookie) headers.cookie = init.cookie
+    return proxy(new NextRequest(`http://localhost:3000${path}`, { method: init.method ?? "GET", headers }))
+  }
+  const letThrough = (res: Response) => res.headers.get("x-middleware-next") === "1"
+  const sentTo = (res: Response) => {
+    assert.ok(res.status === 307 || res.status === 308, `expected a redirect, got ${res.status}`)
+    return new URL(res.headers.get("location")!)
+  }
+
+  test("sends a visitor from any page to the login page, and remembers where they were going", async () => {
+    const home = sentTo(await call("/"))
+    assert.equal(home.pathname, "/login")
+    assert.equal(home.searchParams.get("next"), null, "the front page needs no reminder")
+
+    const chat = sentTo(await call("/chat/c_1?tab=files"))
+    assert.equal(chat.pathname, "/login")
+    assert.equal(chat.searchParams.get("next"), "/chat/c_1?tab=files")
+  })
+
+  test("answers a visitor's API call with a 401 in the shape the app reads", async () => {
+    for (const path of ["/api/models", "/api/chat", "/api/conversations"]) {
+      const res = await call(path)
+      assert.equal(res.status, 401, path)
+      assert.deepEqual(await res.json(), { error: { code: "unauthorized", message: "Sign in to continue." } })
+      assert.equal(res.headers.get("cache-control"), "no-store")
+    }
+  })
+
+  test("leaves the login page and the sign-in routes open to a visitor", async () => {
+    assert.equal(letThrough(await call("/login")), true)
+    assert.equal(letThrough(await call("/api/auth/get-session")), true)
+    assert.equal(letThrough(await call("/api/auth/sign-in/email", { method: "POST", origin: "http://localhost:3000" })), true)
+    assert.equal(letThrough(await call("/api/auth/callback/google?code=x&state=y")), true)
+  })
+
+  test("lets a signed-in browser reach every page and route", async () => {
+    for (const path of ["/", "/chat", "/chat/c_1", "/projects", "/artifacts", "/api/models", "/api/conversations"]) {
+      assert.equal(letThrough(await call(path, { cookie: SIGNED_IN })), true, path)
+    }
+  })
+
+  test("does not take another app's cookie for a sign-in", async () => {
+    assert.equal(sentTo(await call("/chat", { cookie: "better-auth.session_token=abc" })).pathname, "/login")
+    assert.equal(sentTo(await call("/chat", { cookie: "session_token=abc" })).pathname, "/login")
+  })
+
+  test("refuses a write from another site, even to the sign-in routes", async () => {
+    const res = await call("/api/auth/sign-in/email", { method: "POST", origin: "https://elsewhere.example" })
+    assert.equal(res.status, 403)
+    const chat = await call("/api/chat", { method: "POST", origin: "https://elsewhere.example", cookie: SIGNED_IN })
+    assert.equal(chat.status, 403)
+  })
+
+  test("adds its security headers to what it lets through and to what it turns away", async () => {
+    for (const res of [await call("/login"), await call("/chat"), await call("/api/models"), await call("/chat", { cookie: SIGNED_IN })]) {
+      assert.equal(res.headers.get("x-content-type-options"), "nosniff")
+      assert.equal(res.headers.get("x-frame-options"), "SAMEORIGIN")
+      assert.equal(res.headers.get("referrer-policy"), "strict-origin-when-cross-origin")
+    }
   })
 })

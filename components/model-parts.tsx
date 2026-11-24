@@ -1,7 +1,9 @@
+import type { CSSProperties } from "react"
 import { Brain, Code, Crown, Scale, Sparkles, Zap, type LucideIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import type { ModelProfile, ProviderId, Scores, Tier } from "@/lib/router/types"
+import { hueOf, hueVar } from "@/lib/scene/hue"
 import type { ModelDef } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -15,33 +17,27 @@ export const KIND_ICON: Record<NonNullable<ModelDef["kind"]>, LucideIcon> = {
   god: Crown,
 }
 
-/** A stable hue for each provider, so a name is recognised by colour as well as by its letters. */
-function hueOf(id: string) {
-  let h = 0
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 360
-  return h
-}
-
 /**
- * A monogram, not a logo: the first letters of the provider on a tinted square. Decorative, since the
- * provider's name always sits next to it.
+ * A monogram, not a logo: the first letters of the provider on a chamfered tile in the provider's colour (lib/scene/hue.ts).
+ * Decorative, since the provider's name always sits next to it.
  */
 export function ProviderMark({ id, label, className }: { id: ProviderId | string; label: string; className?: string }) {
-  const hue = hueOf(id)
+  const hue = hueVar(hueOf(id))
   const letters = label.replace(/[^A-Za-z0-9 ]/g, "").split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?"
   return (
-    // The letters are drawn by CSS from data-letters, so they are not text in the page. A button that is named
-    // "Answered by Llama, Groq…" and shows this mark would otherwise count as having a visible "G" its name lacks.
+    // The letters are drawn by CSS from data-letters (the ::after of a .cut, whose ::before is its fill), so they are not
+    // text in the page. A button that is named "Answered by Llama, Groq…" and shows this mark would otherwise count as
+    // having a visible "G" its name lacks.
     <span
       aria-hidden
       data-letters={letters}
-      className={cn("inline-flex size-6 shrink-0 items-center justify-center rounded-md text-[10px] font-semibold tracking-tight text-foreground before:content-[attr(data-letters)]", className)}
-      style={{ backgroundColor: `color-mix(in oklab, oklch(0.7 0.14 ${hue}) 28%, transparent)`, boxShadow: `inset 0 0 0 1px color-mix(in oklab, oklch(0.6 0.14 ${hue}) 35%, transparent)` }}
+      className={cn("cut cut-sm hud inline-flex size-6 shrink-0 items-center justify-center text-[11px] tracking-normal text-foreground after:content-[attr(data-letters)]", className)}
+      style={{ "--edge": `color-mix(in oklab, ${hue} 70%, var(--card))`, "--fill": `color-mix(in oklab, ${hue} 20%, var(--card))` } as CSSProperties}
     />
   )
 }
 
-const TIER_LABEL: Record<Tier, string> = { flagship: "Flagship", strong: "Strong", balanced: "Balanced", fast: "Fast", mini: "Mini" }
+export const TIER_LABEL: Record<Tier, string> = { flagship: "Flagship", strong: "Strong", balanced: "Balanced", fast: "Fast", mini: "Mini" }
 
 export function TierBadge({ tier, className }: { tier: Tier; className?: string }) {
   return (

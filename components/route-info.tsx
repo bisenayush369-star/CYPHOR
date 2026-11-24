@@ -24,11 +24,11 @@ export function RouteChip({ route, className }: { route: RouteInfo; className?: 
           type="button"
           aria-label={`Answered by ${route.name}, ${route.providerLabel}. ${MODE_LABEL[route.mode]}. Show details`}
           className={cn(
-            "inline-flex min-h-8 max-w-[14rem] min-w-0 items-center gap-1.5 rounded-full px-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
+            "cut cut-sm inline-flex min-h-8 max-w-[14rem] min-w-0 items-center gap-1.5 px-2 text-xs text-muted-foreground [--edge:transparent] [--fill:transparent] transition-colors hover:text-foreground hover:[--edge:var(--border)] hover:[--fill:var(--accent)] focus-visible:text-foreground focus-visible:outline-2 focus-visible:outline-ring",
             className
           )}
         >
-          {fell ? <TriangleAlert className="size-3.5 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden /> : <ProviderMark id={route.provider} label={route.providerLabel} className="size-4 rounded text-[8px]" />}
+          {fell ? <TriangleAlert className="size-3.5 shrink-0 text-cp-orange" aria-hidden /> : <ProviderMark id={route.provider} label={route.providerLabel} className="size-4 [--cut:4px] after:content-none" />}
           <span className="truncate">{route.name}</span>
         </button>
       </PopoverTrigger>
@@ -41,7 +41,7 @@ export function RouteChip({ route, className }: { route: RouteInfo; className?: 
           </div>
         </div>
         <p className="flex items-center gap-1.5 text-xs font-medium">
-          <Route className="size-3.5 text-primary" aria-hidden /> {MODE_LABEL[route.mode]}
+          <Route className="size-3.5 text-signal" aria-hidden /> {MODE_LABEL[route.mode]}
         </p>
         <p className="text-[13px] leading-snug text-muted-foreground">{route.reason}</p>
       </PopoverContent>
@@ -59,13 +59,13 @@ function MemberStatus({ m }: { m: CouncilMember }) {
   if (m.status === "done")
     return (
       <span className="flex items-center gap-1 text-xs text-muted-foreground">
-        <CircleCheck className="size-3.5 text-primary" aria-hidden /> {formatMs(m.ms)}
+        <CircleCheck className="size-3.5 text-cp-green" aria-hidden /> {formatMs(m.ms)}
       </span>
     )
   if (m.status === "timeout")
     return (
       <span className="flex items-center gap-1 text-xs text-muted-foreground">
-        <Clock className="size-3.5" aria-hidden /> Too slow
+        <Clock className="size-3.5 text-cp-orange" aria-hidden /> Too slow
       </span>
     )
   return (
@@ -90,11 +90,11 @@ export function CouncilPanel({ council }: { council: CouncilInfo }) {
   const open = chosen ?? busy
   return (
     <Collapsible open={open} onOpenChange={setChosen} className="font-sans">
-      <div className="rounded-xl border bg-card/60">
-        <CollapsibleTrigger className="flex min-h-11 w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none">
+      <div className="cut [--fill:color-mix(in_oklab,var(--card)_70%,transparent)]">
+        <CollapsibleTrigger className="flex min-h-11 w-full items-center gap-2.5 px-3 py-2 text-left outline-none focus-visible:outline-2 focus-visible:outline-ring">
           <Crown className="size-4 shrink-0 text-primary" aria-hidden />
           <span className="min-w-0 flex-1">
-            <span className="block text-sm font-medium">God Mode</span>
+            <span className="hud block text-[12px]">God Mode</span>
             <span className="line-clamp-2 text-xs text-muted-foreground" aria-live="polite">
               {summary(council)}
             </span>
@@ -150,7 +150,7 @@ export function SourceList({ sources, note }: { sources: WebSource[]; note?: str
                   target="_blank"
                   rel="noopener noreferrer"
                   title={s.snippet ? `${s.title}. ${s.snippet}` : s.title}
-                  className="inline-flex min-h-8 max-w-full items-center gap-1.5 rounded-full border bg-card px-2.5 py-1 text-xs transition-colors hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                  className="cut cut-sm inline-flex min-h-8 max-w-full items-center gap-1.5 px-2.5 py-1 text-xs transition-colors hover:[--fill:var(--accent)] focus-visible:outline-2 focus-visible:outline-ring"
                 >
                   <span className="tabular-nums text-muted-foreground">{i + 1}</span>
                   <span className="truncate">{s.site ?? s.title}</span>
@@ -161,7 +161,7 @@ export function SourceList({ sources, note }: { sources: WebSource[]; note?: str
             ))}
             {sources.length > 4 && (
               <li>
-                <button type="button" onClick={() => setAll((v) => !v)} className="min-h-8 rounded-full px-2.5 text-xs text-primary underline-offset-4 hover:underline">
+                <button type="button" onClick={() => setAll((v) => !v)} className="min-h-8 px-2.5 text-xs text-link underline-offset-4 outline-none hover:underline focus-visible:underline focus-visible:outline-2 focus-visible:outline-ring">
                   {all ? "Show fewer" : `Show all ${sources.length}`}
                 </button>
               </li>

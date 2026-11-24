@@ -15,7 +15,7 @@ export interface MockArgs {
   /** Web search or research is switched on, which the demo model cannot do. */
   noAccess: boolean
   signal: AbortSignal
-  /** 1 is normal speed. Automated tests pass more so they do not wait for the typing effect. */
+  /** 1 is normal speed. Automated tests pass more so they do not wait for the typing effect, or less (to 0.1) to watch it. */
   speed?: number
 }
 
@@ -45,7 +45,7 @@ const CIPHER_TOOL_HTML = `<!doctype html>
   h1 { font:600 26px/1.2 Georgia,"Times New Roman",serif; margin:0 0 4px; letter-spacing:-0.01em; }
   .sub { margin:0 0 20px; color:#5b635e; }
   svg { display:block; width:min(280px,76vw); margin:0 auto 20px; overflow:visible; }
-  .inner { transition:transform .28s cubic-bezier(.34,1.56,.64,1); transform-origin:100px 100px; }
+  .inner { transition:transform .28s cubic-bezier(.16,.84,.24,1); transform-origin:100px 100px; }
   .panel { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; }
   label { display:block; font-weight:600; font-size:14px; margin:0 0 6px; }
   textarea { width:100%; min-height:88px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; font:inherit; background:#fff; color:inherit; resize:vertical; }
@@ -250,6 +250,200 @@ function cipherBadgeSvg() {
 </svg>`
 }
 
+const FREQUENCY_TSX = `import { useMemo, useState } from "react"
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import { Eraser, Search } from "lucide-react"
+
+const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
+const SAMPLE = "Frequency analysis breaks simple ciphers because the commonest letters of a language leave a fingerprint, even after every letter has been shifted."
+
+export default function FrequencyAnalyzer() {
+  const [text, setText] = useState(SAMPLE)
+
+  const { rows, total, top } = useMemo(() => {
+    const counts: Record<string, number> = Object.fromEntries(LETTERS.map((l) => [l, 0]))
+    let total = 0
+    for (const ch of text.toUpperCase()) {
+      if (ch in counts) {
+        counts[ch] += 1
+        total += 1
+      }
+    }
+    const rows = LETTERS.map((letter) => ({ letter, count: counts[letter] }))
+    const top = rows.reduce((a, b) => (b.count > a.count ? b : a), rows[0])
+    return { rows, total, top: top.count ? top : null }
+  }, [text])
+
+  const shift = top ? (top.letter.charCodeAt(0) - "E".charCodeAt(0) + 26) % 26 : 0
+
+  return (
+    <div className="min-h-screen bg-slate-50 p-4 text-slate-900 sm:p-8">
+      <div className="mx-auto max-w-2xl space-y-4">
+        <header className="flex items-center gap-2">
+          <Search className="size-5 text-teal-700" />
+          <h1 className="text-xl font-semibold">Letter frequency</h1>
+        </header>
+
+        <label className="block text-sm font-medium" htmlFor="cipher-text">
+          Cipher text
+        </label>
+        <textarea
+          id="cipher-text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          className="h-28 w-full resize-y rounded-lg border border-slate-300 bg-white p-3 text-sm focus:outline-2 focus:outline-teal-600"
+        />
+        <div className="flex items-center justify-between text-sm text-slate-600">
+          <span>{total} letters</span>
+          <button
+            type="button"
+            onClick={() => setText("")}
+            className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-2.5 py-1 hover:bg-slate-100"
+          >
+            <Eraser className="size-4" /> Clear
+          </button>
+        </div>
+
+        <div className="h-64 rounded-xl border border-slate-200 bg-white p-3">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: -20 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="letter" tickLine={false} fontSize={12} interval={0} />
+              <YAxis allowDecimals={false} tickLine={false} fontSize={12} />
+              <Tooltip cursor={{ fill: "#e2e8f0" }} />
+              <Bar dataKey="count" fill="#0f766e" radius={[3, 3, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {top && (
+          <p className="text-sm text-slate-600">
+            The most common letter is <b>{top.letter}</b> ({Math.round((top.count / total) * 100)}%). English text is usually led by E, so a Caesar shift of <b>{shift}</b> would explain it.
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}`
+
+const CAESAR_FLOW = `flowchart TD
+  msg([Plain message]) --> pick{Next character}
+  pick -->|a letter| find[Find its place in the alphabet]
+  find --> add[Add the shift]
+  add --> wrap{Past Z?}
+  wrap -->|yes| back[Wrap round to A]
+  wrap -->|no| write[Write the new letter]
+  back --> write
+  pick -->|anything else| keep[Keep it unchanged]
+  write --> more{More characters?}
+  keep --> more
+  more -->|yes| pick
+  more -->|no| out([Cipher text])`
+
+const TIMER_HTML = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pomodoro timer</title>
+<style>
+  body { margin:0; min-height:100vh; display:grid; place-items:center; background:#0d1117; color:#e6edf3; font:16px/1.5 system-ui,sans-serif; }
+  main { text-align:center; padding:24px; }
+  #mode { color:#7d8590; margin:0 0 8px; }
+  #time { font:700 clamp(56px,18vw,112px)/1 ui-monospace,Menlo,monospace; letter-spacing:-0.02em; }
+  button { margin:20px 6px 0; padding:10px 22px; border:1px solid #30363d; border-radius:999px; background:#161b22; color:inherit; font:inherit; cursor:pointer; }
+  button:hover { background:#21262d; }
+  button.primary { background:#238636; border-color:#2ea043; }
+</style>
+</head>
+<body>
+<main>
+  <p id="mode">Focus</p>
+  <div id="time">25:00</div>
+  <button id="go" class="primary">Start</button>
+  <button id="reset">Reset</button>
+</main>
+<script>
+  var LENGTHS = { Focus: 25 * 60, Break: 5 * 60 };
+  var mode = "Focus", left = LENGTHS.Focus, timer = null;
+  var time = document.getElementById("time"), label = document.getElementById("mode"), go = document.getElementById("go");
+  function show() {
+    var m = Math.floor(left / 60), s = left % 60;
+    time.textContent = (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+    label.textContent = mode;
+    document.title = time.textContent + " " + mode;
+  }
+  function tick() {
+    left -= 1;
+    if (left <= 0) {
+      mode = mode === "Focus" ? "Break" : "Focus";
+      left = LENGTHS[mode];
+    }
+    show();
+  }
+  go.onclick = function () {
+    if (timer) { clearInterval(timer); timer = null; go.textContent = "Start"; }
+    else { timer = setInterval(tick, 1000); go.textContent = "Pause"; }
+  };
+  document.getElementById("reset").onclick = function () {
+    clearInterval(timer); timer = null; mode = "Focus"; left = LENGTHS.Focus; go.textContent = "Start"; show();
+  };
+  show();
+</script>
+</body>
+</html>`
+
+const BROKEN_COUNTER_TSX = `import { useState } from "react"
+
+export default function Counter() {
+  const [count, setCount] = useState(0)
+  const history: number[] | undefined = undefined
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+      <div className="w-64 rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+        <p className="text-5xl font-semibold tabular-nums text-slate-900">{count}</p>
+        <button
+          type="button"
+          onClick={() => setCount(count + 1)}
+          className="mt-4 rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800"
+        >
+          Add one
+        </button>
+        <p className="mt-3 text-sm text-slate-500">{history.length} earlier values</p>
+      </div>
+    </div>
+  )
+}`
+
+const FIXED_COUNTER_TSX = `import { useState } from "react"
+
+export default function Counter() {
+  const [count, setCount] = useState(0)
+  const [history, setHistory] = useState<number[]>([])
+
+  const add = () => {
+    setHistory([...history, count])
+    setCount(count + 1)
+  }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+      <div className="w-64 rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+        <p className="text-5xl font-semibold tabular-nums text-slate-900">{count}</p>
+        <button
+          type="button"
+          onClick={add}
+          className="mt-4 rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800"
+        >
+          Add one
+        </button>
+        <p className="mt-3 text-sm text-slate-500">{history.length} earlier values</p>
+      </div>
+    </div>
+  )
+}`
+
 function artifact(id: string, type: string, title: string, content: string, language?: string) {
   const lang = language ? ` language="${language}"` : ""
   return `<artifact identifier="${id}" type="${type}"${lang} title="${title}">\n${content}\n</artifact>`
@@ -267,6 +461,8 @@ const SCRIPTS: Record<string, Script> = {
 Try one of these:
 
 - **Build a small Caesar cipher tool I can try in the browser** opens an interactive artifact beside the chat
+- **Make a React component that charts letter frequency** opens a React app with a live chart
+- **Draw a flowchart of how a Caesar encoder works** opens a diagram
 - **Compare Caesar and Vigenère in a table** shows Markdown tables
 - **Write a TypeScript debounce function** shows code blocks with a copy button
 
@@ -300,6 +496,62 @@ The page is responsive: the hero stacks below 720 px. Tell me the real roaster's
 ${artifact("cipher-wheel-badge", "svg", "Cipher wheel badge", cipherBadgeSvg())}
 
 It's plain SVG, so it scales to any size and you can download it from the panel. I can make a version in one colour for stamping or embossing.`,
+  },
+
+  frequency: {
+    thinking:
+      "A letter-frequency analyzer suits the cipher theme, and it is the usual way to break a Caesar cipher. It needs a text box, a count per letter, a bar chart and a hint about the likely shift. React state fits, and a chart library saves hand-drawing the axes.",
+    body: `Here's a letter-frequency analyzer. Paste cipher text and the chart shows how often each letter appears; the note under it turns the tallest bar into a likely Caesar shift.
+
+${artifact("frequency-analyzer", "react", "Letter frequency analyzer", FREQUENCY_TSX)}
+
+It's one React component styled with Tailwind classes, and the chart is Recharts. Open the **Code** tab to read it, or press **Copy code** to take the whole file.`,
+  },
+
+  diagram: {
+    thinking:
+      "A flowchart of how one character is encoded: letter or not, add the shift, wrap past Z, then loop until the message ends. Mermaid is the right format because it lays out the boxes and arrows itself.",
+    body: `Here's how the encoder treats each character. Letters are shifted and wrap round past Z; everything else is kept as it is.
+
+${artifact("caesar-flow", "mermaid", "How the Caesar encoder works", CAESAR_FLOW)}
+
+The diagram loads Mermaid from a CDN, so it needs a network connection. The **Code** tab has the source if you want to edit it by hand.`,
+  },
+
+  fenced: {
+    thinking: "One file with its own styles and script. A countdown that switches between focus and break, and a start and reset button. No storage, no network.",
+    body: `Here's a Pomodoro timer as a single file.
+
+${F}html
+${TIMER_HTML}
+${F}
+
+Focus runs 25 minutes and breaks run 5, and the tab title counts down so you can follow it from another tab. This reply is a plain code block with no artifact tag, which shows how Cyphor turns an ordinary block of a page into a preview too.`,
+  },
+
+  broken: {
+    thinking: "A counter that also shows how many earlier values it has had. I'll keep the history in a variable and print its length.",
+    body: `Here's a counter that shows how many values it has gone through.
+
+${artifact("counter-with-a-bug", "react", "Counter with a bug", BROKEN_COUNTER_TSX)}
+
+This one was written to break on purpose: the history is never set up, so the page fails as soon as it draws. The panel shows the error with a **Fix with Cyphor** button, which sends the error back to me.`,
+  },
+
+  fixed: {
+    thinking: "The error says history is undefined. It was a plain variable, never state. Make it state, append the old value on each click, and send the whole file under the same name so it becomes version 2.",
+    body: `The history was never created, so reading its length failed. I made it state and add the old value on every click.
+
+${artifact("counter-with-a-bug", "react", "Counter with a bug", FIXED_COUNTER_TSX)}
+
+It's the same artifact, now at version 2; the version menu in the panel keeps the first one.`,
+  },
+
+  cannotFix: {
+    thinking: "The error is about a different artifact than the one the demo model wrote deliberately. I can't read it, so say so.",
+    body: `The demo model only has scripted replies, so it can't work out what went wrong in this preview. With a real model connected under **Settings → Model**, this button sends the error and the model sends back the corrected file as a new version.
+
+To see that flow here, ask: *Show me a preview that breaks.*`,
   },
 
   debounce: {
@@ -516,6 +768,9 @@ In the meantime, these prompts show off the interface:
 
 - *Build a small Caesar cipher tool I can try in the browser* opens an interactive artifact
 - *Draw an SVG badge with a cipher wheel* renders an SVG artifact
+- *Make a React component that charts letter frequency* runs a React app
+- *Draw a flowchart of how a Caesar encoder works* draws a diagram
+- *Show me a preview that breaks* shows the error bar and the Fix button
 - *Compare Caesar and Vigenère in a table* shows Markdown tables
 - *Create a four-week launch plan for a small side project* shows headings and checklists`,
   },
@@ -524,7 +779,13 @@ In the meantime, these prompts show off the interface:
 function pickScript(prompt: string): string {
   const p = prompt.toLowerCase().trim()
   if (!p) return "fallback"
+  // The panel's "Fix with Cyphor" button sends: The preview of "<title>" shows this error ...
+  if (/^the preview of ".*" shows this error/.test(p)) return p.startsWith('the preview of "counter with a bug"') ? "fixed" : "cannotFix"
+  if (/preview.*(break|broken|error|crash)|\bbroken\b|has a bug/.test(p)) return "broken"
   if (/^(hi|hello|hey|hola|namaste|good (morning|afternoon|evening))\b/.test(p) && p.length < 40) return "hello"
+  if (/flow ?chart|diagram|mermaid/.test(p)) return "diagram"
+  if (/\breact\b|component|frequency|bar chart/.test(p)) return "frequency"
+  if (/pomodoro|\btimer\b|fenced|no artifact tag/.test(p)) return "fenced"
   if (/\bsvg\b|badge|\blogo\b|\bdraw\b/.test(p)) return "svg"
   if (/landing page|web ?site|web page|homepage/.test(p)) return "landing"
   if (/(build|make|create|write)\b.*\b(cipher|caesar|encrypt\w*|decod\w*)\b.*\b(tool|app|widget|calculator|demo)\b|\bcipher tool\b/.test(p)) return "cipherTool"
@@ -561,28 +822,38 @@ function attachmentNote(files: Attachment[]) {
 
 function* pieces(text: string): Generator<{ s: string; ms: number }> {
   let i = 0
-  let inArtifact = false
+  // While a long block (an artifact or a fenced code block) is being streamed this holds the text that ends it.
+  let until = ""
   while (i < text.length) {
-    if (!inArtifact && text.startsWith("<artifact", i)) inArtifact = true
-    const size = inArtifact ? 30 + Math.floor(Math.random() * 40) : 2 + Math.floor(Math.random() * 5)
+    if (!until) {
+      if (text.startsWith("<artifact", i)) until = "</artifact>"
+      else if (text.startsWith("```", i) && (i === 0 || text[i - 1] === "\n")) until = "\n```"
+    }
+    let size = until ? 30 + Math.floor(Math.random() * 40) : 2 + Math.floor(Math.random() * 5)
+    if (!until) {
+      // Never step over the start of a long block, so it is always recognised and then streamed in big steps.
+      const starts = [text.indexOf("<artifact", i + 1), text.indexOf("\n```", i) + 1].filter((n) => n > i)
+      const next = starts.length ? Math.min(...starts) : -1
+      if (next !== -1 && next < i + size) size = next - i
+    }
     let s = text.slice(i, i + size)
-    if (inArtifact) {
-      const close = text.indexOf("</artifact>", i)
+    if (until) {
+      const close = text.indexOf(until, until === "\n```" ? i + 3 : i)
       if (close !== -1 && close < i + size) {
-        s = text.slice(i, close + "</artifact>".length)
-        inArtifact = false
+        s = text.slice(i, close + until.length)
+        until = ""
       }
     }
     i += s.length
     const last = s[s.length - 1]
-    const ms = inArtifact ? 8 : last === "\n" ? 70 : /[.!?:]/.test(last) ? 55 : 13
+    const ms = until ? 8 : last === "\n" ? 70 : /[.!?:]/.test(last) ? 55 : 13
     yield { s, ms }
   }
 }
 
 export async function* mockReply(a: MockArgs): AsyncGenerator<string> {
   const script = SCRIPTS[a.attachments.length && a.prompt.trim().length < 3 ? "fallback" : pickScript(a.prompt)]
-  const speed = a.speed && a.speed >= 1 && a.speed <= 50 ? a.speed : 1
+  const speed = a.speed && a.speed >= 0.1 && a.speed <= 50 ? a.speed : 1
   const nap = (ms: number) => sleep(ms / speed, a.signal)
 
   if (a.thinking) {

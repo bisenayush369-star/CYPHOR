@@ -49,5 +49,5 @@ export function decode(el: HTMLElement, text: string, duration = 0.9) {
   })
 }
 
-export const NOTCHES = 26
-export const NOTCH_DEG = 360 / NOTCHES
+export const NOTCH_DEG = 360 / 26
+

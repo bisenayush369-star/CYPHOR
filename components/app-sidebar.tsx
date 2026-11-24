@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef } from "react"
 import {
-  Boxes,
-  ChevronsUpDown,
   FolderKanban,
   FolderMinus,
   FolderPlus,
@@ -18,6 +16,7 @@ import {
   StarOff,
   Sun,
   Trash2,
+  Boxes,
 } from "lucide-react"
 import { toast } from "sonner"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -146,7 +145,6 @@ export function AppSidebar() {
   const route = useRoute()
   const metas = useChatMetas()
   const { isMobile, setOpenMobile } = useSidebar()
-  const name = useStore((s) => s.settings.displayName)
   const theme = useStore((s) => s.settings.theme)
   const updateSettings = useStore((s) => s.updateSettings)
   const setCommandOpen = useUI((s) => s.setCommandOpen)
@@ -180,8 +178,6 @@ export function AppSidebar() {
     const rect = (e?.currentTarget as HTMLElement | undefined)?.getBoundingClientRect()
     transitionTheme(next, rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : null, () => updateSettings({ theme: next }))
   }
-
-  const display = name.trim() || "Your workspace"
 
   return (
     <Sidebar collapsible="icon">
@@ -282,18 +278,13 @@ export function AppSidebar() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
-              <Avatar aria-hidden className="size-8 rounded-lg">
-                <AvatarFallback className="rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
-                  {display.slice(0, 1).toUpperCase()}
-                </AvatarFallback>
+              <Avatar aria-hidden className="size-8 rounded-none [clip-path:polygon(0_0,calc(100%_-_6px)_0,100%_6px,100%_100%,6px_100%,0_calc(100%_-_6px))]">
+                <AvatarFallback className="rounded-none bg-primary font-display text-sm font-semibold text-primary-foreground">C</AvatarFallback>
               </Avatar>
               <span className="grid min-w-0 flex-1 text-left leading-tight">
-                <span className="truncate text-sm font-medium">{display}</span>{" "}
-                <span className="truncate text-xs text-muted-foreground">Saved on this device</span>
-                {/* No aria-label here: the name is built from the text on screen, so voice control and screen readers agree. */}
-                <span className="sr-only">, account menu</span>
+                <span className="truncate text-sm font-medium">Cyphor</span>
+                <span className="truncate text-xs text-muted-foreground">Local workspace</span>
               </span>
-              <ChevronsUpDown className="ml-auto size-4 text-muted-foreground" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent side={isMobile ? "top" : "right"} align="end" className="w-60">

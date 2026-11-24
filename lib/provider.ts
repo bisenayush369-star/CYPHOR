@@ -1,14 +1,14 @@
+import { expireSession } from "./account"
 import { toWire } from "./chat-messages"
 import { mockReply } from "./mock"
 import { fetchModelIds, openAiChat, ProviderError } from "./openai"
 import type { StreamEvent } from "./router/types"
+import { STANDALONE } from "./standalone"
 import type { Message, Settings } from "./types"
 import { isAbortError, uid } from "./utils"
+import { priorityFor, thinkingFor } from "./router/effort"
 
-export { fetchModelIds, ProviderError }
-
-/** True in the single-file preview, where there is no server: replies then come from the demo model in the page. */
-export const STANDALONE = typeof __STANDALONE__ !== "undefined" && __STANDALONE__
+export { fetchModelIds, ProviderError, STANDALONE }
 
 export interface StreamArgs {
   settings: Settings
@@ -17,7 +17,7 @@ export interface StreamArgs {
   /** Root-to-user path for the turn being answered. */
   thread: Message[]
   signal: AbortSignal
-  /** Set when the server should keep this turn. Left out for incognito chats and when saving is off. */
+  /** Set when the server should keep this turn. Left out when saving is switched off. */
   save?: { chatId: string; assistantId: string; title: string; starred: boolean; projectId: string | null; createdAt: number }
   /** Called when the server says how the reply is being made: the model in charge, the God Mode council, the web sources. */
   onMeta?: (patch: Partial<Message>) => void
@@ -50,13 +50,13 @@ async function* demoReply({ settings, model, thread, signal, onMeta }: StreamArg
   // The router screens in the preview are samples (see sample-catalog.ts). It is loaded here only, so the Next.js app never fetches it.
   const finish = onMeta
     ? await import("./sample-catalog").then((m) =>
-        m.playSampleRouting({ model, prompt, priority: settings.routePriority, disabled: settings.disabledProviders, godMax: settings.godMax, speed: testSpeed(), signal, onMeta })
+        m.playSampleRouting({ model, prompt, priority: priorityFor(settings.effort, settings.routePriority), disabled: settings.disabledProviders, godMax: settings.godMax, speed: testSpeed(), signal, onMeta })
       )
     : undefined
   yield* mockReply({
     prompt,
     attachments: last?.attachments ?? [],
-    thinking: settings.extendedThinking || model === "cyphor-deep",
+    thinking: thinkingFor(settings.effort, model),
     noAccess: settings.webSearch || settings.research,
     signal,
     speed: testSpeed(),
@@ -67,7 +67,7 @@ async function* demoReply({ settings, model, thread, signal, onMeta }: StreamArg
 let cachedSpeed: number | undefined
 
 /**
- * Automated tests can ask for a faster demo model with ?speed=20 in the address.
+ * Automated tests can ask for a faster demo model with ?speed=20 in the address, or a slower one (down to 0.1) to watch a reply being written.
  * It is remembered for the tab, so it survives moving between screens. Normal use is unaffected.
  */
 function testSpeed() {
@@ -76,7 +76,7 @@ function testSpeed() {
   try {
     const fromUrl = Number(new URLSearchParams(window.location.search).get("speed"))
     const saved = Number(window.sessionStorage.getItem("cyphor:speed"))
-    const ok = (v: number) => v >= 1 && v <= 50
+    const ok = (v: number) => v >= 0.1 && v <= 50
     n = ok(fromUrl) ? fromUrl : ok(saved) ? saved : 1
     if (ok(fromUrl)) window.sessionStorage.setItem("cyphor:speed", String(fromUrl))
   } catch {
@@ -103,7 +103,8 @@ async function* serverReply({ settings, model, system, thread, signal, save, onM
         chat: save ? { title: save.title, starred: save.starred, projectId: save.projectId, createdAt: save.createdAt } : undefined,
         temperature: settings.temperature,
         maxTokens: settings.maxTokens,
-        thinking: settings.extendedThinking || model === "cyphor-deep",
+        thinking: thinkingFor(settings.effort, model),
+        effort: settings.effort,
         noAccess: settings.webSearch || settings.research,
         web: settings.research ? "research" : settings.webSearch ? "search" : "off",
         priority: settings.routePriority,
@@ -115,6 +116,11 @@ async function* serverReply({ settings, model, system, thread, signal, save, onM
   } catch (e) {
     if (isAbortError(e)) throw e
     throw new ProviderError("Could not reach the Cyphor server. Check your connection and try again.")
+  }
+  if (res.status === 401) {
+    // The sign-in ended (a week away, or signed out in another tab). The page then goes to the login page.
+    expireSession()
+    throw new ProviderError("Your session ended. Sign in again to keep chatting.", { status: 401 })
   }
   if (!res.ok) throw new ProviderError(await errorMessage(res, last), { status: res.status })
   if (!res.body) throw new ProviderError("The server sent an empty response.")

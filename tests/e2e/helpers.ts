@@ -21,10 +21,56 @@ export const artifactPanel = (page: Page) => page.locator('section[aria-label^="
  */
 export const appReady = (page: Page) => expect(page.locator("html")).toHaveAttribute("data-ready", "true")
 
-/** Opens a page and waits for the shell, so the next key press is not lost to a page that is still starting. */
-export async function open(page: Page, url = FAST) {
+/**
+ * What a new account starts with. The first visit asks whether to keep the moving city; most tests are not about that,
+ * and a 3D scene running in every test page would slow them down and make screenshots differ, so they start with
+ * "no city" and the default colour theme already chosen. The tests that are about the choice start with "first-run".
+ */
+const PLAIN_APPEARANCE = { scene: "off", sceneChosen: true, palette: "night-city" }
+
+/** "plain": signed in, city off, default theme. "first-run": signed in and not asked yet. "signed-out": nobody is signed in. */
+export type Start = "plain" | "first-run" | "signed-out"
+
+const PASSWORD = "correct-horse-battery"
+let made = 0
+const signedIn = new WeakSet<Page>()
+
+/**
+ * Makes a new account for this test and signs the page in (the sign-in cookie lands in the browser's own jar, so every
+ * later request of this page carries it). `appearance` is saved under the account's own key before the app starts.
+ */
+export async function signUp(page: Page, appearance?: Record<string, unknown>) {
+  await page.goto("/login")
+  const origin = new URL(page.url()).origin
+  const email = `e2e-${process.pid}-${Date.now()}-${made++}@example.com`
+  const res = await page.request.post("/api/auth/sign-up/email", { headers: { origin }, data: { name: "Test Person", email, password: PASSWORD } })
+  expect(res.ok(), `sign-up answered ${res.status()}`).toBe(true)
+  const { user } = (await res.json()) as { user: { id: string } }
+  if (appearance) {
+    await page.addInitScript(
+      ([key, value]) => {
+        try {
+          // Only the first time: later page loads must keep whatever the test changed.
+          if (!localStorage.getItem(key)) localStorage.setItem(key, value)
+        } catch {
+          /* storage blocked */
+        }
+      },
+      [`cyphor:v1:${user.id}`, JSON.stringify({ state: { settings: appearance }, version: 1 })]
+    )
+  }
+  signedIn.add(page)
+  return { email, password: PASSWORD, userId: user.id }
+}
+
+/**
+ * Opens a page and waits for the shell, so the next key press is not lost to a page that is still starting.
+ * The first call of a test also makes the account (see `Start`); later calls in the same test just go to the address.
+ */
+export async function open(page: Page, url = FAST, start: Start = "plain") {
+  if (start !== "signed-out" && !signedIn.has(page)) await signUp(page, start === "plain" ? PLAIN_APPEARANCE : undefined)
   await page.goto(url)
-  await appReady(page)
+  if (start !== "signed-out") await appReady(page)
 }
 
 /** Reloads the page and waits for the shell again. */

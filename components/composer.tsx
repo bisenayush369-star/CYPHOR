@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
   ArrowUp,
-  Brain,
   Camera,
+  Crown,
   FileText,
   Globe,
   Mic,
@@ -30,6 +30,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useCatalog } from "@/lib/catalog"
 import { useCoarsePointer } from "@/lib/hooks/use-media"
 import { readAttachment } from "@/lib/files"
 import { BUILTIN_STYLES, CONNECTORS } from "@/lib/defaults"
@@ -81,7 +82,6 @@ export function Composer({ draftKey, placeholder = "Reply to Cyphor", autoFocus,
   const files = useUI((s) => s.pending[draftKey] ?? NO_FILES)
   const setDraft = useUI((s) => s.setDraft)
   const setPending = useUI((s) => s.setPending)
-  const bumpTick = useUI((s) => s.bumpTick)
   const openSettings = useUI((s) => s.openSettings)
   const settings = useStore((s) => s.settings)
   const update = useStore((s) => s.updateSettings)
@@ -96,6 +96,16 @@ export function Composer({ draftKey, placeholder = "Reply to Cyphor", autoFocus,
   const [reading, setReading] = useState(false)
   const [listening, setListening] = useState(false)
   const Speech = getSpeech()
+
+  // God Mode is a switch of its own: it asks every connected provider and merges the answers. Turning it off goes back to the model you had.
+  const catalog = useCatalog((s) => s.data)
+  const godReady = !catalog || catalog.mode === "demo" || catalog.godReady
+  const isGod = model === "cyphor-god"
+  const beforeGod = useRef("cyphor-auto")
+  useEffect(() => {
+    if (model !== "cyphor-god") beforeGod.current = model
+  }, [model])
+  const toggleGod = () => onModelChange(isGod ? beforeGod.current : "cyphor-god")
 
   const style = [...BUILTIN_STYLES, ...settings.customStyles].find((x) => x.id === settings.styleId)
   const connected = CONNECTORS.filter((c) => settings.connectors[c.id])
@@ -187,11 +197,13 @@ export function Composer({ draftKey, placeholder = "Reply to Cyphor", autoFocus,
   const chips: { key: string; label: string; icon: typeof Globe; off: () => void }[] = []
   if (settings.webSearch) chips.push({ key: "web", label: "Web search", icon: Globe, off: () => update({ webSearch: false }) })
   if (settings.research) chips.push({ key: "research", label: "Research", icon: Telescope, off: () => update({ research: false }) })
-  if (settings.extendedThinking) chips.push({ key: "think", label: "Extended thinking", icon: Brain, off: () => update({ extendedThinking: false }) })
   if (style && style.id !== "normal") chips.push({ key: "style", label: style.name, icon: Palette, off: () => update({ styleId: "normal" }) })
 
   return (
+    <div className="focus-glow">
     <div
+      data-active={dragging || undefined}
+      data-god={isGod || undefined}
       onDragOver={(e) => {
         if (e.dataTransfer.types.includes("Files")) {
           e.preventDefault()
@@ -208,14 +220,15 @@ export function Composer({ draftKey, placeholder = "Reply to Cyphor", autoFocus,
         void addFiles(Array.from(e.dataTransfer.files))
       }}
       className={cn(
-        "relative rounded-[1.6rem] border bg-card shadow-composer transition-[border-color,box-shadow] duration-200",
-        "focus-within:border-primary/45 focus-within:ring-4 focus-within:ring-ring/15",
-        dragging && "border-primary ring-4 ring-ring/25",
-        hero && "rounded-[1.9rem]"
+        "cut cut-lg brackets lit [--edge:var(--input)] [--fill:var(--card)]",
+        hero && "cut-xl",
+        // God Mode wears the hazard stripe along its top edge and a yellow outline.
+        isGod && "[--edge:var(--marker)]"
       )}
     >
+      {isGod && <div className="hazard pointer-events-none absolute inset-x-0 top-0 z-[2] h-[3px]" aria-hidden />}
       {dragging && (
-        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-[inherit] bg-card/90 text-sm font-medium text-primary">
+        <div className="hud pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-card/90 text-sm text-signal">
           Drop files to attach
         </div>
       )}
@@ -225,9 +238,9 @@ export function Composer({ draftKey, placeholder = "Reply to Cyphor", autoFocus,
           {files.map((f) => (
             <li key={f.id} className="group/file relative shrink-0">
               {f.kind === "image" && f.dataUrl ? (
-                <img src={f.dataUrl} alt={f.name} className="size-16 rounded-xl border object-cover" />
+                <img src={f.dataUrl} alt={f.name} className="size-16 rounded-sm border object-cover" />
               ) : (
-                <div className="flex h-16 w-40 items-center gap-2 rounded-xl border bg-muted/60 px-3">
+                <div className="flex h-16 w-40 items-center gap-2 rounded-sm border bg-muted/60 px-3">
                   <FileText className="size-5 shrink-0 text-muted-foreground" aria-hidden />
                   <span className="min-w-0 text-xs">
                     <span className="block truncate font-medium">{f.name}</span>
@@ -239,7 +252,7 @@ export function Composer({ draftKey, placeholder = "Reply to Cyphor", autoFocus,
                 type="button"
                 aria-label={`Remove ${f.name}`}
                 onClick={() => setPending(draftKey, files.filter((x) => x.id !== f.id))}
-                className="absolute -top-1.5 -right-1.5 flex size-6 items-center justify-center rounded-full border bg-background text-muted-foreground shadow-sm transition-colors hover:text-foreground max-sm:size-7"
+                className="absolute -top-1.5 -right-1.5 flex size-6 items-center justify-center rounded-sm border bg-background text-muted-foreground shadow-sm transition-colors hover:text-foreground max-sm:size-7"
               >
                 <X className="size-3.5" />
               </button>
@@ -259,7 +272,6 @@ export function Composer({ draftKey, placeholder = "Reply to Cyphor", autoFocus,
         spellCheck
         onChange={(e) => {
           setDraft(draftKey, e.target.value)
-          bumpTick()
         }}
         onKeyDown={(e) => {
           if (e.key !== "Enter" || e.nativeEvent.isComposing) return
@@ -291,7 +303,7 @@ export function Composer({ draftKey, placeholder = "Reply to Cyphor", autoFocus,
                 type="button"
                 onClick={off}
                 aria-label={`${label} is on. Turn off`}
-                className="group/chip inline-flex h-7 items-center gap-1.5 rounded-full border border-primary/25 bg-primary/8 pr-1.5 pl-2.5 font-sans text-xs text-primary transition-colors hover:bg-primary/14 max-sm:h-8"
+                className="group/chip inline-flex h-7 items-center gap-1.5 rounded-sm border border-signal/40 bg-signal/10 pr-1.5 pl-2.5 font-sans text-xs text-link transition-colors hover:bg-signal/20 max-sm:h-8"
               >
                 <Icon className="size-3.5" aria-hidden />
                 {label}
@@ -305,7 +317,7 @@ export function Composer({ draftKey, placeholder = "Reply to Cyphor", autoFocus,
       <div className="flex items-center gap-1 px-2 pb-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <IconButton label="Add files, connectors and tools" size="icon" className="size-9 rounded-full text-muted-foreground" side={menuSide === "top" ? "top" : "bottom"}>
+            <IconButton label="Add files, connectors and tools" size="icon" className="size-9 rounded-sm text-muted-foreground" side={menuSide === "top" ? "top" : "bottom"}>
               <Plus className="size-5" />
             </IconButton>
           </DropdownMenuTrigger>
@@ -343,9 +355,6 @@ export function Composer({ draftKey, placeholder = "Reply to Cyphor", autoFocus,
             <DropdownMenuCheckboxItem checked={settings.research} onCheckedChange={(v) => update({ research: !!v })} onSelect={(e) => e.preventDefault()}>
               <Telescope className="size-4" /> Research
             </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem checked={settings.extendedThinking} onCheckedChange={(v) => update({ extendedThinking: !!v })} onSelect={(e) => e.preventDefault()}>
-              <Brain className="size-4" /> Extended thinking
-            </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
@@ -369,6 +378,18 @@ export function Composer({ draftKey, placeholder = "Reply to Cyphor", autoFocus,
         </DropdownMenu>
 
         <div className="ml-auto flex items-center gap-0.5 sm:gap-1">
+          {settings.provider === "server" && (
+            <IconButton
+              label={isGod ? "God Mode is on. Turn it off" : godReady ? "God Mode: every connected model answers, then one merged answer" : "God Mode needs two connected providers"}
+              pressed={isGod}
+              size="icon"
+              disabled={!godReady && !isGod}
+              onClick={toggleGod}
+              className={cn("size-9 rounded-sm text-muted-foreground", isGod && "bg-marker text-[#0a0b10] hover:bg-marker hover:text-[#0a0b10]")}
+            >
+              <Crown className="size-[1.1rem]" />
+            </IconButton>
+          )}
           <ModelPicker model={model} onChange={onModelChange} side={menuSide} />
           {Speech && (
             <IconButton
@@ -376,13 +397,13 @@ export function Composer({ draftKey, placeholder = "Reply to Cyphor", autoFocus,
               pressed={listening}
               size="icon"
               onClick={toggleVoice}
-              className={cn("size-9 rounded-full text-muted-foreground", listening && "bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive")}
+              className={cn("size-9 rounded-sm text-muted-foreground", listening && "bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive")}
             >
               <Mic className={cn("size-[1.15rem]", listening && "animate-pulse")} />
             </IconButton>
           )}
           {generating ? (
-            <Button type="button" size="icon" aria-label="Stop reply" onClick={onStop} className="ratchet size-10 rounded-full sm:size-9">
+            <Button type="button" size="icon" aria-label="Stop reply" onClick={onStop} className="ratchet size-10 sm:size-9">
               <Square className="size-3.5 fill-current" />
             </Button>
           ) : (
@@ -392,7 +413,7 @@ export function Composer({ draftKey, placeholder = "Reply to Cyphor", autoFocus,
               aria-label="Send message"
               disabled={!canSend}
               onClick={submit}
-              className="ratchet size-10 rounded-full disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 sm:size-9"
+              className="ratchet size-10 disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 sm:size-9"
             >
               <ArrowUp className="size-[1.15rem]" />
             </Button>
@@ -421,6 +442,7 @@ export function Composer({ draftKey, placeholder = "Reply to Cyphor", autoFocus,
           e.target.value = ""
         }}
       />
+    </div>
     </div>
   )
 }

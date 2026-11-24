@@ -1,6 +1,6 @@
 "use client"
 
-import { lazy, Suspense, useEffect, useState, useSyncExternalStore, type ReactNode } from "react"
+import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react"
 import { usePathname } from "next/navigation"
 import { AppHeader } from "@/components/app-header"
 import { AppSidebar } from "@/components/app-sidebar"
@@ -9,6 +9,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { SIDEBAR_STORAGE_KEY, SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { CityBackground } from "@/components/city-background"
 import { useIsDesktop } from "@/lib/hooks/use-media"
 import { startNewChat } from "@/lib/actions"
 import { useCatalog } from "@/lib/catalog"
@@ -16,6 +17,7 @@ import { loadMotion } from "@/lib/motion"
 import { useBindRouter, useRoute } from "@/lib/route"
 import { useStore } from "@/lib/store"
 import { startSync } from "@/lib/sync"
+import { applyPalettePref } from "@/lib/palette"
 import { applyAppearance, applyThemeDom } from "@/lib/theme"
 import { useUI } from "@/lib/ui"
 
@@ -90,6 +92,20 @@ function useAppearance() {
     return () => m.removeEventListener("change", on)
   }, [theme])
   useEffect(() => applyAppearance(font, effects), [font, effects])
+
+  // The colour theme. The first-paint script already picked one for this page load (a different one on every refresh
+  // when you chose "change on every refresh"). Here a fixed choice wins over whatever it picked, and choosing "rotate"
+  // in Settings shows a new theme straight away, but opening the app does not re-roll it.
+  const palette = useStore((s) => s.settings.palette)
+  const scene = useStore((s) => s.settings.scene)
+  const first = useRef(true)
+  useEffect(() => {
+    applyPalettePref(palette, !first.current)
+    first.current = false
+  }, [palette])
+  useEffect(() => {
+    document.documentElement.dataset.scene = scene
+  }, [scene])
 }
 
 /**
@@ -198,10 +214,7 @@ function useArtifactLifecycle() {
 }
 
 function useBoot() {
-  useEffect(() => {
-    useUI.getState().setIncognito(useStore.getState().settings.incognitoByDefault)
-  }, [])
-  // Keeps a copy of saved chats on the server (does nothing in the offline preview).
+  // Keeps a copy of saved chats in the account's database (does nothing in the offline preview).
   useEffect(() => startSync(), [])
   // Asks the server which providers are connected, so the model picker can say what each model resolves to.
   useEffect(() => {
@@ -234,8 +247,10 @@ function Frame({ children }: { children: ReactNode }) {
   const fullscreen = open && !!artifact?.fullscreen
   const docked = open && wide && !fullscreen
 
+  // `scene-surface` is where the veil over the moving city is drawn (app/cyber.css); `data-view` sets how strong it is.
+  const view = route.name === "home" ? "home" : route.name === "chat" ? "chat" : "page"
   const main = (
-    <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col">
+    <div className="scene-surface flex h-full min-h-0 min-w-0 flex-1 flex-col" data-view={view}>
       <AppHeader artifactOpen={open} />
       <RouteFrame>{children}</RouteFrame>
     </div>
@@ -309,9 +324,14 @@ function Splash() {
   )
 }
 
+/**
+ * The login page stands alone: no sidebar, no saved chats, and it is drawn on the server as well, so there is nothing to wait for.
+ * Everything else waits until the server has said who is signed in, and shows their saved copy only then.
+ */
 export function Shell({ children }: { children: ReactNode }) {
   const mounted = useMounted()
-  return mounted ? <App>{children}</App> : <Splash />
+  if (!mounted) return <Splash />
+  return <App>{children}</App>
 }
 
 function App({ children }: { children: ReactNode }) {
@@ -333,6 +353,7 @@ function App({ children }: { children: ReactNode }) {
 
   return (
     <TooltipProvider delayDuration={400} skipDelayDuration={250}>
+      <CityBackground />
       <SidebarProvider defaultOpen={readSidebarOpen()} className="h-[var(--app-h,100dvh)] min-h-0 overflow-hidden">
         <button
           type="button"

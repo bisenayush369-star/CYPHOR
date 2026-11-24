@@ -46,9 +46,7 @@ export function exportAll(s: Pick<State, "settings" | "chats" | "projects">) {
   const { apiKey, ...settings } = s.settings
   void apiKey
   const chats = Object.fromEntries(
-    Object.entries(s.chats)
-      .filter(([, c]) => !c.incognito)
-      .map(([id, c]) => [id, JSON.parse(chatToJson(c)) as Chat])
+    Object.entries(s.chats).map(([id, c]) => [id, JSON.parse(chatToJson(c)) as Chat])
   )
   return JSON.stringify({ app: "cyphor-chat", version: 1, exportedAt: new Date().toISOString(), settings, chats, projects: s.projects }, null, 2)
 }

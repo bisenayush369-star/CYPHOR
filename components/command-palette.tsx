@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { Boxes, FolderKanban, Ghost, Keyboard, MessageSquare, MessagesSquare, Moon, PanelLeft, Plus, Settings, Sun } from "lucide-react"
+import { Boxes, FolderKanban, Keyboard, MessageSquare, MessagesSquare, Moon, PanelLeft, Plus, Settings, Sun } from "lucide-react"
 import {
   CommandDialog,
   CommandEmpty,
@@ -19,7 +19,6 @@ import { MOD, useUI } from "@/lib/ui"
 export function CommandPalette() {
   const open = useUI((s) => s.commandOpen)
   const setOpen = useUI((s) => s.setCommandOpen)
-  const setIncognito = useUI((s) => s.setIncognito)
   const openSettings = useUI((s) => s.openSettings)
   const chats = useStore((s) => s.chats)
   const projects = useStore((s) => s.projects)
@@ -31,7 +30,6 @@ export function CommandPalette() {
   const items = useMemo(() => {
     if (!open) return []
     return Object.values(chats)
-      .filter((c) => !c.incognito)
       .sort((a, b) => b.updatedAt - a.updatedAt)
       .slice(0, 60)
       .map((c) => ({
@@ -64,9 +62,6 @@ export function CommandPalette() {
         <CommandGroup heading="Actions">
           <CommandItem value="new chat" onSelect={run(startNewChat)}>
             <Plus /> New chat <CommandShortcut>{MOD} ⇧ O</CommandShortcut>
-          </CommandItem>
-          <CommandItem value="new incognito chat ghost private" onSelect={run(() => { setIncognito(true); navigate(href.home) })}>
-            <Ghost /> New incognito chat
           </CommandItem>
           <CommandItem value="settings preferences" onSelect={run(() => openSettings("general"))}>
             <Settings /> Settings <CommandShortcut>{MOD},</CommandShortcut>

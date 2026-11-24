@@ -4,16 +4,15 @@ import { conversations, messages } from "@/db/schema"
 import { toSummary } from "@/lib/chat-messages"
 import { apiError, guard, readJson } from "@/lib/http"
 import { DEFAULT_MODEL_ID } from "@/lib/models/page"
-import { getOwnerId } from "@/proxy"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 const ID_RE = /^[A-Za-z0-9_-]{1,64}$/
 
-/** GET /api/conversations lists this browser's saved conversations, newest first. */
+/** GET /api/conversations lists the signed-in user's saved conversations, newest first. */
 export async function GET(req: Request) {
-  const gate = guard(req, "api", 120, "RATE_LIMIT_API_PER_MIN")
+  const gate = await guard(req, "api", 120, "RATE_LIMIT_API_PER_MIN")
   if (!gate.ok) return gate.response
   const db = await getDb()
 
@@ -36,7 +35,7 @@ export async function GET(req: Request) {
 
 /** POST /api/conversations creates an empty conversation. Sending an id that already exists returns it unchanged. */
 export async function POST(req: Request) {
-  const gate = guard(req, "api", 120, "RATE_LIMIT_API_PER_MIN")
+  const gate = await guard(req, "api", 120, "RATE_LIMIT_API_PER_MIN")
   if (!gate.ok) return gate.response
   const body = await readJson(req, 64 * 1024)
   if (!body.ok) return body.response
@@ -70,17 +69,19 @@ export async function POST(req: Request) {
   return Response.json({ conversation: toSummary(row, 0) }, { status: 201, headers: gate.headers })
 }
 
-/** DELETE /api/conversations removes every conversation this browser has saved. */
+/** DELETE /api/conversations removes every conversation the signed-in user has saved. */
 export async function DELETE(req: Request) {
-  const gate = guard(req, "api", 120, "RATE_LIMIT_API_PER_MIN")
+  const gate = await guard(req, "api", 120, "RATE_LIMIT_API_PER_MIN")
   if (!gate.ok) return gate.response
-  const owner = getOwnerId(req)!
+  const owner = gate.ownerId
   const db = await getDb()
   const mine = await db.select({ id: conversations.id }).from(conversations).where(eq(conversations.ownerId, owner))
   if (mine.length) {
     const ids = mine.map((c) => c.id)
-    // Messages first, so this also works when the database does not enforce foreign keys.
-    await db.batch([db.delete(messages).where(inArray(messages.conversationId, ids)), db.delete(conversations).where(eq(conversations.ownerId, owner))])
+    await db.transaction(async (tx) => {
+      await tx.delete(messages).where(inArray(messages.conversationId, ids))
+      await tx.delete(conversations).where(eq(conversations.ownerId, owner))
+    })
   }
   return Response.json({ deleted: mine.length }, { headers: gate.headers })
 }

@@ -29,28 +29,40 @@ const NOT_CONNECTED = ["GEMINI_API_KEY", "OPENROUTER_API_KEY", "ZAI_API_KEY", "N
 
 const modelButton = (page: Page) => page.getByRole("button", { name: /^Model: .+\. Change model$/ })
 
+/** The panel the model button opens. Its rows are options, and "More models" and "Effort" lead to other views of it. */
+const picker = (page: Page) => page.getByRole("dialog", { name: "Choose a model" })
+const pickerRow = (page: Page, name: RegExp) => picker(page).getByRole("option", { name })
+
 async function openPicker(page: Page) {
   await modelButton(page).click()
-  await expect(page.getByRole("menu")).toBeVisible()
+  await expect(picker(page)).toBeVisible()
 }
 
 async function useModel(page: Page, name: RegExp) {
   await openPicker(page)
-  await page.getByRole("menuitemradio", { name }).click()
+  await pickerRow(page, name).click()
+  await expect(picker(page)).toBeHidden()
 }
 
-/** Picks one model by its own name from the library, the way a person does. Returns the name it picked. */
+/** More models, then Compare ratings: the full library with scores, tags and filters. */
+async function openLibrary(page: Page) {
+  await openPicker(page)
+  await picker(page).getByRole("button", { name: "More models" }).click()
+  await picker(page).getByRole("button", { name: "Compare ratings" }).click()
+  await expect(page.getByRole("dialog", { name: "Models" })).toBeVisible()
+}
+
+/** Picks one model by its own name from More models, the way a person does. Returns the name it picked. */
 async function pickFromLibrary(page: Page, search: string) {
   await openPicker(page)
-  await page.getByRole("menuitem", { name: "Browse all models" }).click()
-  const library = page.getByRole("dialog", { name: "Models" })
-  await library.getByLabel("Search models").fill(search)
-  const use = library.getByRole("button", { name: /^Use / })
-  await expect(use).toHaveCount(1)
-  const name = (await use.getAttribute("aria-label"))!.replace(/^Use /, "")
-  await use.click()
-  await expect(library).toBeHidden()
-  await expect(modelButton(page)).toHaveAttribute("aria-label", `Model: ${name}. Change model`)
+  await picker(page).getByRole("button", { name: "More models" }).click()
+  await picker(page).getByLabel("Search models").fill(search)
+  const rows = picker(page).getByRole("listbox", { name: "All models" }).getByRole("option")
+  await expect(rows).toHaveCount(1)
+  const name = (await rows.first().locator("span.block").first().innerText()).trim()
+  await rows.first().click()
+  await expect(picker(page)).toBeHidden()
+  await expect(modelButton(page)).toHaveAttribute("aria-label", new RegExp(`^Model: ${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} .*\\. Change model$`))
   return name
 }
 
@@ -149,7 +161,7 @@ test.describe("in the browser", () => {
 
       await pane.getByRole("button", { name: "Close settings" }).click()
       await openPicker(page)
-      const god = page.getByRole("menuitemradio", { name: /God Mode/ })
+      const god = pickerRow(page, /God Mode/)
       await expect(god).toBeDisabled()
       await expect(god).toContainText("Needs two connected providers.")
     })
@@ -175,17 +187,23 @@ test.describe("in the browser", () => {
   })
 
   test.describe("the model picker and library", () => {
-    test("say which model each Cyphor model would use right now", async ({ page }) => {
+    test("the chosen Cyphor model says which model it would use right now", async ({ page }) => {
       await openPicker(page)
+      for (const name of [/Cyphor Auto/, /Cyphor Swift/, /Cyphor Core/, /Cyphor Deep/, /Cyphor Code/]) await expect(pickerRow(page, name)).toBeVisible()
+      await expect(pickerRow(page, /God Mode/)).toBeEnabled()
+      await page.keyboard.press("Escape")
+
+      // Only the one in use says what it maps to, so choose each in turn and read it.
       for (const name of [/Cyphor Auto/, /Cyphor Swift/, /Cyphor Core/, /Cyphor Deep/, /Cyphor Code/]) {
-        await expect(page.getByRole("menuitemradio", { name })).toContainText(/Now: (Groq|Mistral|Anthropic) · \S/)
+        await useModel(page, name)
+        await openPicker(page)
+        await expect(pickerRow(page, name)).toContainText(/Now: (Groq|Mistral|Anthropic), \S/)
+        await page.keyboard.press("Escape")
       }
-      await expect(page.getByRole("menuitemradio", { name: /God Mode/ })).toBeEnabled()
     })
 
     test("the library lists every model of the connected providers, and filters by provider", async ({ page }) => {
-      await openPicker(page)
-      await page.getByRole("menuitem", { name: "Browse all models" }).click()
+      await openLibrary(page)
       const library = page.getByRole("dialog", { name: "Models" })
       // Each card holds small lists of its own (tags, scores), so count only the cards.
       const cards = library.getByRole("list", { name: "Models" }).locator(":scope > li")
@@ -233,7 +251,7 @@ test.describe("in the browser", () => {
 
     test("God Mode asks every provider, then shows one merged answer and who took part", async ({ page }) => {
       await useModel(page, /God Mode/)
-      await expect(modelButton(page)).toHaveAttribute("aria-label", "Model: God Mode. Change model")
+      await expect(modelButton(page)).toHaveAttribute("aria-label", /^Model: God Mode (Low|Medium|High)\. Change model$/)
       await send(page, "Explain recursion in one paragraph")
       await waitForReply(page)
       await expect(page.getByText("Merged answer from the panel.")).toBeVisible()
@@ -407,13 +425,12 @@ test.describe("in the browser", () => {
 
       test("the model picker", async ({ page }) => {
         await openPicker(page)
-        await expect(page.getByRole("menuitemradio", { name: /Cyphor Auto/ })).toContainText("Now:")
-        await scan(page, "model picker", '[role="menu"]')
+        await expect(pickerRow(page, /Cyphor Auto/)).toContainText("Now:")
+        await scan(page, "model picker", '[role="dialog"]')
       })
 
       test("the model library", async ({ page }) => {
-        await openPicker(page)
-        await page.getByRole("menuitem", { name: "Browse all models" }).click()
+        await openLibrary(page)
         await expect(page.getByRole("dialog", { name: "Models" }).getByRole("list", { name: "Models" })).toBeVisible()
         await scan(page, "model library")
       })
@@ -444,6 +461,27 @@ test.describe("in the browser", () => {
 
 test.describe("the API", () => {
   test.skip(({ isMobile }) => isMobile, "the screen size does not matter here, so the desktop run is enough")
+
+  // Every route needs a signed-in person, so each test makes an account first. The cookie lands in the request's own jar.
+  test.beforeEach(async ({ request, baseURL }) => {
+    const email = `api-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`
+    const res = await request.post("/api/auth/sign-up/email", { headers: { origin: baseURL! }, data: { name: "Api Person", email, password: "correct-horse-battery" } })
+    expect(res.ok(), `sign-up answered ${res.status()}`).toBe(true)
+  })
+
+  test("a request with no sign-in is refused, and nothing is sent to a provider", async ({ playwright, baseURL }) => {
+    const anonymous = await playwright.request.newContext({ baseURL })
+    try {
+      const catalog = await anonymous.get("/api/models")
+      expect(catalog.status()).toBe(401)
+      expect(await catalog.text()).not.toMatch(LEAK)
+      const chat = await anonymous.post("/api/chat", { data: body("Hello") })
+      expect(chat.status()).toBe(401)
+      expect((await chat.text()).trim().startsWith("{")).toBe(true)
+    } finally {
+      await anonymous.dispose()
+    }
+  })
 
   const body = (text: string, model = "cyphor-auto") => ({
     chatId: null,

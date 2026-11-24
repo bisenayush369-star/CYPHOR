@@ -77,7 +77,7 @@ export function ShareDialog() {
         <DialogHeader>
           <DialogTitle>Export chat</DialogTitle>
           <DialogDescription>
-            Chats stay on this device, so there is no share link. Export a copy to send to someone or keep for yourself.
+            Chats are private to your account, so there is no share link. Export a copy to send to someone or keep for yourself.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-2">

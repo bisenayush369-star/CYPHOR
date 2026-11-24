@@ -85,7 +85,7 @@ export function ModelLibrary() {
         <div className="shrink-0 border-b pt-safe">
           <DialogHeader className="flex-row items-start justify-between gap-2 px-4 py-3 sm:px-6">
             <div className="min-w-0">
-              <DialogTitle className="font-serif text-xl font-medium tracking-tight">Models</DialogTitle>
+              <DialogTitle className="font-display text-xl font-semibold tracking-tight">Models</DialogTitle>
               <DialogDescription className="mt-0.5 text-[13px] leading-snug">
                 Everything your connected providers offer, rated for what each does best. Ratings are estimates from the model's family and size.
                 {STANDALONE && " In this preview the list is a sample: nothing is connected."}
@@ -127,7 +127,7 @@ export function ModelLibrary() {
                   variant={provider === p.id ? "secondary" : "outline"}
                   aria-pressed={provider === p.id}
                   onClick={() => setProvider(p.id)}
-                  className="h-8 shrink-0 rounded-full px-3 text-[13px]"
+                  className="h-8 shrink-0 px-3 text-[13px]"
                 >
                   {p.label} <span className="text-muted-foreground tabular-nums">{p.n}</span>
                 </Button>

@@ -1,5 +1,4 @@
 import { and, eq } from "drizzle-orm"
-import type { BatchItem } from "drizzle-orm/batch"
 import { getDb, type Db } from "@/db"
 import { conversations, messages } from "@/db/schema"
 import { checkChatRequest, messageToRow, toWire, type ChatRequest } from "@/lib/chat-messages"
@@ -11,6 +10,7 @@ import { isAbort } from "@/lib/retry"
 import { WEB_RULES, estimateTokens, hasImages, planRoute, prepare, runGod, runPlan, searchQuery, webGround, type RouterContext } from "@/lib/router"
 import { readInt, scrubSecrets } from "@/lib/router/env"
 import type { MessageMeta, StreamEvent, WebSource } from "@/lib/router/types"
+import { priorityFor, thinkingFor } from "@/lib/router/effort"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -25,15 +25,16 @@ export const maxDuration = 300
  *   {"type":"error","message":"..."}
  *   {"type":"done"}
  *
- * Unless the chat is incognito, the conversation and both messages are saved as it goes, so a
- * finished reply is in the database even if the tab is closed a moment later.
+ * The conversation and both messages are saved to the signed-in user's account as it goes, so a
+ * finished reply is in the database even if the tab is closed a moment later. A request with no
+ * chatId is answered but not saved (used for one-off questions such as the router test in Settings).
  */
 
 /** What the answer is made of, before it becomes a line of JSON. */
 type Piece = Exclude<StreamEvent, { type: "error" | "done" }>
 
 export async function POST(req: Request) {
-  const gate = guard(req, "chat", 20, "RATE_LIMIT_CHAT_PER_MIN")
+  const gate = await guard(req, "chat", 20, "RATE_LIMIT_CHAT_PER_MIN")
   if (!gate.ok) return gate.response
 
   const body = await readJson(req)
@@ -46,7 +47,7 @@ export async function POST(req: Request) {
   const ctx = await prepare({ disabled: r.disabledProviders })
   if (ctx.configured && model === "cyphor-god") {
     // God Mode asks several providers for one message, so it gets a smaller allowance of its own.
-    const god = guard(req, "god", 6, "RATE_LIMIT_GOD_PER_MIN")
+    const god = await guard(req, "god", 6, "RATE_LIMIT_GOD_PER_MIN")
     if (!god.ok) return god.response
   }
 
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
     try {
       db = await getDb()
       const saved = await beginTurn(db, gate.ownerId, r, model)
-      if (saved === "forbidden") return apiError(404, "not_found", "That conversation does not belong to this browser.", gate.headers)
+      if (saved === "forbidden") return apiError(404, "not_found", "That conversation does not belong to this account.", gate.headers)
     } catch (e) {
       console.error("[api/chat] could not save the turn:", e)
       db = null
@@ -156,7 +157,7 @@ async function* replyPieces(r: ChatRequest, model: string, ctx: RouterContext, s
     for await (const text of mockReply({
       prompt: last.content,
       attachments: last.attachments ?? [],
-      thinking: r.thinking || model === "cyphor-deep",
+      thinking: r.thinking || thinkingFor(r.effort, model),
       noAccess: r.noAccess || r.web !== "off",
       signal,
       speed: r.speed,
@@ -175,8 +176,8 @@ async function* replyPieces(r: ChatRequest, model: string, ctx: RouterContext, s
   }
 
   const wire = toWire(system, r.thread)
-  const common = { wire, temperature: r.temperature, maxTokens: r.maxTokens, thinking: r.thinking || model === "cyphor-deep", signal }
-  const input = { model, prompt: last.content, hasImages: hasImages(wire), estTokens: estimateTokens(wire), priority: r.priority, targets: ctx.targets, providers: ctx.providers }
+  const common = { wire, temperature: r.temperature, maxTokens: r.maxTokens, thinking: r.thinking || thinkingFor(r.effort, model), signal }
+  const input = { model, prompt: last.content, hasImages: hasImages(wire), estTokens: estimateTokens(wire), priority: priorityFor(r.effort, r.priority), targets: ctx.targets, providers: ctx.providers }
 
   if (model === "cyphor-god") {
     const cap = readInt("GODMODE_MAX_PANEL", 6)
@@ -208,10 +209,12 @@ async function beginTurn(db: Db, ownerId: string, r: ChatRequest, model: string)
   const user = r.thread[r.thread.length - 1]
   const now = Date.now()
 
-  const statements: BatchItem<"sqlite">[] = []
-  if (!existing) {
-    statements.push(
-      db.insert(conversations).values({
+  const missing = r.thread.filter((m) => !have.has(m.id)).map((m) => messageToRow(chatId, { ...m, activeChildId: m.id === user.id ? r.assistantId : m.activeChildId }))
+
+  // One transaction: either the conversation, the user's messages and the empty reply are all there, or none are.
+  await db.transaction(async (tx) => {
+    if (!existing) {
+      await tx.insert(conversations).values({
         id: chatId,
         ownerId,
         title: r.chat.title,
@@ -222,12 +225,9 @@ async function beginTurn(db: Db, ownerId: string, r: ChatRequest, model: string)
         createdAt: r.chat.createdAt,
         updatedAt: now,
       })
-    )
-  }
-  const missing = r.thread.filter((m) => !have.has(m.id)).map((m) => messageToRow(chatId, { ...m, activeChildId: m.id === user.id ? r.assistantId : m.activeChildId }))
-  if (missing.length) statements.push(db.insert(messages).values(missing).onConflictDoNothing())
-  statements.push(
-    db
+    }
+    if (missing.length) await tx.insert(messages).values(missing).onConflictDoNothing()
+    await tx
       .insert(messages)
       .values({
         conversationId: chatId,
@@ -246,17 +246,15 @@ async function beginTurn(db: Db, ownerId: string, r: ChatRequest, model: string)
         createdAt: now,
       })
       .onConflictDoUpdate({ target: [messages.conversationId, messages.id], set: { content: "", status: "streaming", error: null, thinkingMs: null, meta: null } })
-  )
-  // Point the branch pointers at this turn.
-  statements.push(db.update(messages).set({ activeChildId: r.assistantId }).where(and(eq(messages.conversationId, chatId), eq(messages.id, user.id))))
-  if (user.parentId) {
-    statements.push(db.update(messages).set({ activeChildId: user.id }).where(and(eq(messages.conversationId, chatId), eq(messages.id, user.parentId))))
-  } else {
-    statements.push(db.update(conversations).set({ rootActiveId: user.id }).where(eq(conversations.id, chatId)))
-  }
-  statements.push(db.update(conversations).set({ updatedAt: now }).where(eq(conversations.id, chatId)))
-
-  await db.batch(statements as [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]])
+    // Point the branch pointers at this turn.
+    await tx.update(messages).set({ activeChildId: r.assistantId }).where(and(eq(messages.conversationId, chatId), eq(messages.id, user.id)))
+    if (user.parentId) {
+      await tx.update(messages).set({ activeChildId: user.id }).where(and(eq(messages.conversationId, chatId), eq(messages.id, user.parentId)))
+    } else {
+      await tx.update(conversations).set({ rootActiveId: user.id }).where(eq(conversations.id, chatId))
+    }
+    await tx.update(conversations).set({ updatedAt: now }).where(eq(conversations.id, chatId))
+  })
   return "saved"
 }
 
@@ -266,9 +264,9 @@ async function finishTurn(
   assistantId: string,
   result: { content: string; status: "done" | "stopped" | "error"; error: string | null; thinkingMs: number | null; meta: MessageMeta | null }
 ) {
-  await db.batch([
-    db.update(messages).set(result).where(and(eq(messages.conversationId, chatId), eq(messages.id, assistantId))),
-    db.update(conversations).set({ updatedAt: Date.now() }).where(eq(conversations.id, chatId)),
-  ])
+  await db.transaction(async (tx) => {
+    await tx.update(messages).set(result).where(and(eq(messages.conversationId, chatId), eq(messages.id, assistantId)))
+    await tx.update(conversations).set({ updatedAt: Date.now() }).where(eq(conversations.id, chatId))
+  })
 }
 

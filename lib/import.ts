@@ -3,7 +3,7 @@ import type { Attachment, Chat, Message, Project } from "./types"
 /**
  * Reads a backup file and returns only data that is safe to put in the store.
  * Anything malformed is repaired or dropped, so a damaged or hand-edited file can't break the app later.
- * Image data and incognito chats never come back from a backup.
+ * Image data never comes back from a backup.
  */
 
 type Raw = Record<string, unknown>

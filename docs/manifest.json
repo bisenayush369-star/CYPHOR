@@ -3,56 +3,37 @@
  "name": "cyphor-chat",
  "about": "File list of the delivered cyphor-chat project. Hashes are SHA-256 of each file with line endings read as LF.",
  "node": ">=22.18",
+ "applyPrompt": "cyphor-1-apply",
  "steps": [
   {
    "id": "foundation",
-   "number": 1,
-   "title": "Tooling and shared basics",
-   "prompt": "cyphor-1-foundation",
-   "expect": {
-    "typecheck": "no errors",
-    "unitTests": null
-   }
+   "number": null,
+   "title": "Settings and shared types",
+   "prompt": "cyphor-1-apply"
   },
   {
    "id": "server",
-   "number": 2,
-   "title": "Database, proxy and conversation API",
-   "prompt": "cyphor-2-server",
-   "expect": {
-    "typecheck": "no errors",
-    "unitTests": 50
-   }
+   "number": null,
+   "title": "Database, sign-in, the gate and the conversation API",
+   "prompt": "cyphor-1-apply"
   },
   {
    "id": "router",
-   "number": 3,
-   "title": "LLM router, God Mode and chat API",
-   "prompt": "cyphor-3-router",
-   "expect": {
-    "typecheck": "no errors",
-    "unitTests": 137
-   }
+   "number": null,
+   "title": "LLM router, God Mode, thinking and the chat API",
+   "prompt": "cyphor-1-apply"
   },
   {
    "id": "interface",
-   "number": 4,
-   "title": "Screens, components and browser logic",
-   "prompt": "cyphor-4-interface",
-   "expect": {
-    "typecheck": "no errors",
-    "unitTests": 170
-   }
+   "number": null,
+   "title": "Screens, components, city, themes and artifacts",
+   "prompt": "cyphor-1-apply"
   },
   {
    "id": "e2e",
-   "number": 5,
+   "number": null,
    "title": "Browser tests",
-   "prompt": "cyphor-5-tests",
-   "expect": {
-    "typecheck": "no errors",
-    "unitTests": 170
-   }
+   "prompt": "cyphor-1-apply"
   },
   {
    "id": "docs",
@@ -86,16 +67,19 @@
    "db:push": "drizzle-kit push",
    "db:studio": "drizzle-kit studio",
    "tree": "node scripts/file-tree.mjs",
-   "build:preview": "vite build --config preview/vite.config.ts"
+   "build:preview": "vite build --config preview/vite.config.ts",
+   "build:palettes": "node --import ./tests/unit/register.mjs scripts/build-palettes.mjs",
+   "build:artifact-runtime": "node scripts/build-artifact-runtime.mjs"
   },
   "dependencies": {
    "@fontsource-variable/atkinson-hyperlegible-next": "^5.3.0",
    "@fontsource-variable/literata": "^5.3.0",
+   "@fontsource-variable/oxanium": "^5.3.0",
    "@fontsource-variable/schibsted-grotesk": "^5.3.0",
    "@fontsource-variable/spline-sans-mono": "^5.3.0",
    "@gsap/react": "^2.1.2",
-   "@libsql/client": "^0.18.0",
    "@tailwindcss/postcss": "^4.3.3",
+   "better-auth": "^1.7.23",
    "class-variance-authority": "^0.7.1",
    "clsx": "^2.1.1",
    "cmdk": "^1.1.1",
@@ -104,6 +88,7 @@
    "highlight.js": "^11.12.0",
    "lucide-react": "^1.62.0",
    "next": "^16.4.3",
+   "pg": "^8.23.1",
    "radix-ui": "^1.8.1",
    "react": "^19.3.1",
    "react-dom": "^19.3.1",
@@ -113,20 +98,27 @@
    "remark-gfm": "^4.0.1",
    "sonner": "^2.0.8",
    "tailwind-merge": "^3.7.0",
+   "three": "^0.187.0",
    "tw-animate-css": "^1.4.0",
    "vaul": "^1.1.2",
    "zustand": "^5.0.16"
   },
   "devDependencies": {
    "@axe-core/playwright": "^4.14.0",
+   "@electric-sql/pglite": "^0.5.16",
    "@playwright/test": "^1.64.1",
    "@tailwindcss/vite": "^4.3.3",
    "@types/node": "^26.6.5",
+   "@types/pg": "^8.23.1",
    "@types/react": "^19.3.0",
    "@types/react-dom": "^19.3.0",
+   "@types/three": "^0.187.0",
    "@vitejs/plugin-react": "^6.1.2",
    "drizzle-kit": "^0.31.11",
+   "esbuild": "^0.28.2",
+   "recharts": "^3.10.1",
    "shadcn": "^4.23.0",
+   "sucrase": "^3.35.1",
    "tailwindcss": "^4.3.3",
    "typescript": "^7.0.2",
    "vite": "^8.3.5",
@@ -136,9 +128,9 @@
  "files": [
   {
    "path": ".env.example",
-   "sha256": "2d551aad88190ce9641db1412d50c08cf37ba36836998064f6888c3a617a1bba",
-   "bytes": 3383,
-   "lines": 75,
+   "sha256": "c53c7fe9f2ac38afd4d64e4912be5ee8953b3894b0f652c1ca4018cfbeeed735",
+   "bytes": 5860,
+   "lines": 108,
    "step": "foundation",
    "kind": "required",
    "merge": true
@@ -171,9 +163,9 @@
   },
   {
    "path": "drizzle.config.ts",
-   "sha256": "ec7ca7b6e982c7a9517000f2738e66f563c94e44da394f8dc00015818f0241aa",
-   "bytes": 902,
-   "lines": 16,
+   "sha256": "d9f8f858656443289c59d1ab0925cc1d43c21fc0e6629f68932cac79565162b1",
+   "bytes": 594,
+   "lines": 14,
    "step": "foundation",
    "kind": "required"
   },
@@ -195,9 +187,9 @@
   },
   {
    "path": "lib/types.ts",
-   "sha256": "f374dd3c7a83b23990994de26752fbce3ba826db39cdc16b4feeb9f8c42f3299",
-   "bytes": 3563,
-   "lines": 128,
+   "sha256": "76161e7a679b15bf1b4ab7ad6b9d4332ab8ab03d3c0422dd8fa1cd3aa3e0375f",
+   "bytes": 4244,
+   "lines": 137,
    "step": "foundation",
    "kind": "required"
   },
@@ -219,27 +211,27 @@
   },
   {
    "path": "next.config.ts",
-   "sha256": "71c580aeb5e403b9463b36f22544473da82d2b40f123d4e4ad9425171ddef040",
-   "bytes": 281,
-   "lines": 10,
+   "sha256": "035dc96de6c21cfa7c76cbccbe473ac094e6d11c7fc7c4aa0b8fd9f683c0a547",
+   "bytes": 583,
+   "lines": 13,
    "step": "foundation",
    "kind": "required",
    "merge": true
   },
   {
    "path": "package-lock.json",
-   "sha256": "6bc78dd30cd49ec6a99398173922e51e83baf0c6c5e72b8997d6fbf74fe58dbd",
-   "bytes": 387079,
-   "lines": 11114,
+   "sha256": "ff19eca455811f6f79a788d233ee0e3db67c34fd2f751b5726261db3937d138a",
+   "bytes": 428600,
+   "lines": 12251,
    "step": "foundation",
    "kind": "optional",
    "merge": true
   },
   {
    "path": "package.json",
-   "sha256": "ffc8bb5372d81c2bdd5396c7424581d4fc71526379a1f9d52dac3a91e2d96c0f",
-   "bytes": 2033,
-   "lines": 67,
+   "sha256": "1d713e5e826fde10356658ac79f97cbc2e6fd43351aa3d94143dcc1654b59b9c",
+   "bytes": 2465,
+   "lines": 78,
    "step": "foundation",
    "kind": "required",
    "merge": true
@@ -263,34 +255,58 @@
    "merge": true
   },
   {
+   "path": "app/api/auth/[...all]/route.ts",
+   "sha256": "5a7154943e351859a0dfb0e54781dcf074d9a7491db44c04d45afedbedd112df",
+   "bytes": 990,
+   "lines": 29,
+   "step": "server",
+   "kind": "required"
+  },
+  {
    "path": "app/api/conversations/[id]/route.ts",
-   "sha256": "5ee5a9f1e67dd52ece022a6cb49c5b8a705d99560da335ac14293e4621f1f23e",
-   "bytes": 5514,
-   "lines": 108,
+   "sha256": "b9ac33fc60354e1e105bff94cc77bdab1724e2824b9c317f206e59ea4ed9e5e6",
+   "bytes": 5797,
+   "lines": 118,
    "step": "server",
    "kind": "required"
   },
   {
    "path": "app/api/conversations/route.ts",
-   "sha256": "d4b8d562f8216dc4b15d406e4dd2fb6c3a9c2d1d0048d0ca57f64dd50b0e552d",
-   "bytes": 3967,
-   "lines": 86,
+   "sha256": "8f7b695c6fdd9e3391620d4839daff2f15ee39e15e461dba68e66a43b13b6b4a",
+   "bytes": 3914,
+   "lines": 87,
    "step": "server",
    "kind": "required"
   },
   {
    "path": "db/index.ts",
-   "sha256": "f292677237da21c81f94a2dae71afb0117bbd402025f6995a18e18ceeea86d7d",
-   "bytes": 3451,
-   "lines": 86,
+   "sha256": "7c725ec0c434b04a76a6597bd13c3eaf738c7eb7bd6757790d39647fc072b19e",
+   "bytes": 8187,
+   "lines": 206,
    "step": "server",
    "kind": "required"
   },
   {
    "path": "db/schema.ts",
-   "sha256": "3d5e02a9f65b8126b2c26d8bdee48436f866db1d26fe34f92363c73e8a25f860",
-   "bytes": 2497,
-   "lines": 57,
+   "sha256": "9c7137ee92bc4eb940455f3b4f4bea0a67a8400ad6c3fa1f88b1543b40775e15",
+   "bytes": 5159,
+   "lines": 131,
+   "step": "server",
+   "kind": "required"
+  },
+  {
+   "path": "lib/auth-shared.ts",
+   "sha256": "d1477eee4b66450c111840b92509c2641a087072bf89119481c031ea320a0fb8",
+   "bytes": 1184,
+   "lines": 24,
+   "step": "server",
+   "kind": "required"
+  },
+  {
+   "path": "lib/auth.ts",
+   "sha256": "c6d3425220c3058bd0d93e556218d466ecd0b20131e5a5ac42dbd71cb0787df8",
+   "bytes": 5551,
+   "lines": 119,
    "step": "server",
    "kind": "required"
   },
@@ -304,17 +320,17 @@
   },
   {
    "path": "lib/chat-messages.ts",
-   "sha256": "06ebde8e1d7f36e7f831b0c256794a1ab134d56b5ccc0354e0a1ae977a63142a",
-   "bytes": 22289,
-   "lines": 532,
+   "sha256": "01b190ea6b705ac8fbf092317b1b5506f8181885435ef30db2706f205970fb88",
+   "bytes": 22600,
+   "lines": 536,
    "step": "server",
    "kind": "required"
   },
   {
    "path": "lib/http.ts",
-   "sha256": "0d583189c4a5aa5a076fc9adbb4144053b1b0075c585c4f5e191c6b7809e49d8",
-   "bytes": 2694,
-   "lines": 51,
+   "sha256": "0e052bad0481280cdfbe0cd4bd9e3b84b21efed2efbe5f1da216d9a552213d2b",
+   "bytes": 3919,
+   "lines": 74,
    "step": "server",
    "kind": "required"
   },
@@ -343,18 +359,42 @@
    "kind": "required"
   },
   {
+   "path": "lib/session.ts",
+   "sha256": "310221ec1890c4ce675e3f8336ac97bbca3a33ecf5323fd77718caf8d6308b7b",
+   "bytes": 822,
+   "lines": 22,
+   "step": "server",
+   "kind": "required"
+  },
+  {
    "path": "proxy.ts",
-   "sha256": "60e8182348cd6d93b4d73d458e51b8ef80586bd40ae54f6bc9ecdc0c7f649753",
-   "bytes": 5631,
-   "lines": 129,
+   "sha256": "defc18cace63cef9f3a297ed6624b2623572127f633d16d33984269de340f0b1",
+   "bytes": 4807,
+   "lines": 99,
+   "step": "server",
+   "kind": "required"
+  },
+  {
+   "path": "tests/unit/api-routes.test.ts",
+   "sha256": "d0818644c814c68a7c2a2f1a6f8beb4d3673a209609b27fc4814172179f12c3d",
+   "bytes": 11649,
+   "lines": 256,
+   "step": "server",
+   "kind": "required"
+  },
+  {
+   "path": "tests/unit/auth.test.ts",
+   "sha256": "65971c1c0f55aec58fdaab825d03d2d20fe010d001eddc1c8170b573cd7d24c7",
+   "bytes": 13924,
+   "lines": 250,
    "step": "server",
    "kind": "required"
   },
   {
    "path": "tests/unit/basic-auth.test.ts",
-   "sha256": "74f10f3f3ba94291363df256e95216852cf6ee9d8c35ae627560a10d03194228",
-   "bytes": 7835,
-   "lines": 168,
+   "sha256": "c92cd4302fafee0e1814b0e0d79f7e3d3c98fdb452614a405addef840fcdbe2b",
+   "bytes": 12237,
+   "lines": 252,
    "step": "server",
    "kind": "required"
   },
@@ -368,33 +408,33 @@
   },
   {
    "path": "tests/unit/server-lib.test.ts",
-   "sha256": "65198511294a31e02e1e565b2c9518889dd9ede530cda095bf8eb9cd9b3c8236",
-   "bytes": 20158,
-   "lines": 413,
+   "sha256": "261a1183768f98bb7e2e09b3bcecc1c29621f75fb3e3bb23b08bac2aa90c4b8f",
+   "bytes": 22796,
+   "lines": 446,
    "step": "server",
    "kind": "required"
   },
   {
    "path": "app/api/chat/route.ts",
-   "sha256": "8e3df99e00cd84ef17cc8f7340e14daf09fde6e608cf9e8e357fd93760d1fbfc",
-   "bytes": 10814,
-   "lines": 274,
+   "sha256": "7d0dabd437b019bebf04e58c6f8a1bb7b13a27e0cbd3b9ebea81d37ed826d453",
+   "bytes": 10984,
+   "lines": 272,
    "step": "router",
    "kind": "required"
   },
   {
    "path": "app/api/models/route.ts",
-   "sha256": "06429f60553f69b97bfaa7fa51478004817c11f31218266f8bb2d8b932d6110a",
-   "bytes": 2110,
+   "sha256": "5baa568591ab759f737b3479f7488c827658516dbf1e2c8b214f5db13fac6387",
+   "bytes": 2122,
    "lines": 39,
    "step": "router",
    "kind": "required"
   },
   {
    "path": "lib/mock.ts",
-   "sha256": "9e3531a34cad6d38ace2f1b35c6a05c02bf41a1aa6fcbeadfe1729bfceb4cb55",
-   "bytes": 29999,
-   "lines": 613,
+   "sha256": "432715bdca705a102cd20414bcfcccec61173fa3548462fd13d2c76dbb202f30",
+   "bytes": 42296,
+   "lines": 884,
    "step": "router",
    "kind": "required"
   },
@@ -419,6 +459,14 @@
    "sha256": "e45d7c3cc72d4084ae446c923b46acf2ad4857d79f298c5ed892bfa56ab0c413",
    "bytes": 10886,
    "lines": 263,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "lib/router/effort.ts",
+   "sha256": "8f01c101e6b27548e63bc4793eea6b0735b1578f9d5fc8c4f651ff03d8f10507",
+   "bytes": 2911,
+   "lines": 56,
    "step": "router",
    "kind": "required"
   },
@@ -511,10 +559,26 @@
    "kind": "required"
   },
   {
+   "path": "tests/unit/effort.test.ts",
+   "sha256": "0a244aa5a5e4600a1767bf4d8543f8c4be7def5bb91b7318d953e97d4e9058e0",
+   "bytes": 4386,
+   "lines": 93,
+   "step": "router",
+   "kind": "required"
+  },
+  {
    "path": "tests/unit/helpers/fake-provider.ts",
    "sha256": "f00f610cce59356279d1b996d9c3f8ba193759baf646b9e31bc7833ad59330da",
    "bytes": 5403,
    "lines": 142,
+   "step": "router",
+   "kind": "required"
+  },
+  {
+   "path": "tests/unit/reasoning-stream.test.ts",
+   "sha256": "d8f0b8e0bb630b2d11d52aecc243d15485ec15ae1ee1b57645110d0554163952",
+   "bytes": 8990,
+   "lines": 164,
    "step": "router",
    "kind": "required"
   },
@@ -559,35 +623,51 @@
    "kind": "required"
   },
   {
+   "path": "app/cyber.css",
+   "sha256": "8d0339bc86758d36662438d158305ab280055d49447fcef5747de6be849de033",
+   "bytes": 15250,
+   "lines": 462,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
    "path": "app/globals.css",
-   "sha256": "45ad92f50b6994cc4f65233af8bdd96e3c23f9a6a98d956a27452f33c606b50b",
-   "bytes": 18166,
-   "lines": 514,
+   "sha256": "7fa618e7399b985efeb55caecb56338c37bb97491ae88ad22495d16c96708886",
+   "bytes": 19997,
+   "lines": 547,
    "step": "interface",
    "kind": "required",
    "merge": true
   },
   {
    "path": "app/icon.svg",
-   "sha256": "5601ed57d90aad152be36712eebfca3aee7643ba8492bbceef522855457b7cd0",
-   "bytes": 271,
+   "sha256": "30cae5c3911c2e491f1dbd0cd4f4a134ad77c5cd17c555c367f244e4efe1a5f3",
+   "bytes": 474,
    "lines": 1,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "app/layout.tsx",
-   "sha256": "153f04dbf7e9264627620cd310ddca47d974459b5eb31613535fb2a76d243871",
-   "bytes": 1253,
-   "lines": 37,
+   "sha256": "49dbdbea6954453daed86162a6b6360f2108e327d719a3610315f01f90a36515",
+   "bytes": 1356,
+   "lines": 39,
    "step": "interface",
    "kind": "required",
    "merge": true
   },
   {
+   "path": "app/login/page.tsx",
+   "sha256": "bf4d9916286dd419a552e8afafb0e72080df70065e870f0149fbc460a84a22f2",
+   "bytes": 1294,
+   "lines": 33,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
    "path": "app/not-found.tsx",
-   "sha256": "74074796faaec4620ea766afe3352b7c9d1451b2e78f503468569653139649c6",
-   "bytes": 500,
+   "sha256": "fd87eaa30196e7c09228eab4a6d91e3f8225f92321825fc44a306e03e69d101e",
+   "bytes": 502,
    "lines": 13,
    "step": "interface",
    "kind": "required"
@@ -597,6 +677,14 @@
    "sha256": "93394abcdbd4397cc9c9b1c036f1f7a903aa8d1eaa74594460d77f19f499c0ca",
    "bytes": 138,
    "lines": 6,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "app/palettes.css",
+   "sha256": "27e259d4f1f8f54b2f870347c130e1d55cb5671962849889d8e37c98f44049b2",
+   "bytes": 9891,
+   "lines": 389,
    "step": "interface",
    "kind": "required"
   },
@@ -617,106 +705,122 @@
    "kind": "required"
   },
   {
+   "path": "components/account-problem.tsx",
+   "sha256": "011e86bc6f632c65a37939b43c70e2b30db06e1f5959f0926a95bece5b5b04b6",
+   "bytes": 2726,
+   "lines": 63,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
    "path": "components/app-header.tsx",
-   "sha256": "c5adc2e3e690feb9f40e564dba084057cd8cf7c855a70e5278771619a97eb555",
-   "bytes": 6771,
-   "lines": 166,
+   "sha256": "047a8e8a498050d7417f1af8b50655be481c826f67b38f71ee99b9ef93a10550",
+   "bytes": 6166,
+   "lines": 152,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/app-sidebar.tsx",
-   "sha256": "47042802cb1867bab8f8298325abf5a94bab19d67d7c3943c3d62fc1d3696d89",
-   "bytes": 13367,
-   "lines": 326,
+   "sha256": "b01d9d77d07711d2ba8b6b2d57b9af611e82e181db21d9fda1a2f4af4dc80d76",
+   "bytes": 14145,
+   "lines": 340,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/artifact-card.tsx",
-   "sha256": "7ced7fea286737c9433ecbf7b4054b6565da22e4dcf28f15ddc74f8db9c6f603",
-   "bytes": 2700,
-   "lines": 62,
+   "sha256": "9475d3a51f41c2b3e114e146e968a3c27ad39d2ab82c684406a03f5e6326e3b4",
+   "bytes": 4324,
+   "lines": 102,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/artifact-panel.tsx",
-   "sha256": "bc354f494ff3500eeb48c52597af905e31b8cf8bd09348328fd4e36e4d48b83c",
-   "bytes": 8325,
-   "lines": 196,
+   "sha256": "79cf4384aa54ecddf32d5b75cbdff8fcd2784878d924a70d3696974ffd67e69a",
+   "bytes": 12165,
+   "lines": 279,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/artifact-view.tsx",
-   "sha256": "8b17d67e8dbde0f6c8150f287493758538e3f8e2f47ae2e5ec7369d5b21cc524",
-   "bytes": 3064,
-   "lines": 76,
+   "sha256": "28a291432035331273ea0bae40af56f21b6fa601e544dd8f8b1bfc8da6260d4a",
+   "bytes": 9920,
+   "lines": 244,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/backdrop.tsx",
+   "sha256": "8f92b9d38aaf4a8e1bb9b648412439eedc624fc1f8f6496ce5a623997472cb14",
+   "bytes": 214,
+   "lines": 4,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/brand.tsx",
-   "sha256": "7547b40cdb0a42c80cdb52968d29e05daee1876b61454e30c953a290a278defb",
-   "bytes": 837,
-   "lines": 24,
+   "sha256": "e86b9d470444e5c9157c55e7fb329b8653648ded298b7a5ab5b9b7667bf4f68d",
+   "bytes": 1731,
+   "lines": 48,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/chat-view.tsx",
-   "sha256": "5be78e1c680c6464e3107541aaa1e78cc0a453a5e435e8e7a3918bc956c2a21e",
-   "bytes": 4774,
+   "sha256": "7d20b7683be8d407ba9ab19f0de23911afae971321ee4aceee2903fd4680e6bf",
+   "bytes": 4763,
    "lines": 130,
    "step": "interface",
    "kind": "required"
   },
   {
-   "path": "components/cipher-disk.tsx",
-   "sha256": "b8aed7f763b0fbca48affdd80aafe0c58dfd0066417b5b57c5ad419fba620c2b",
-   "bytes": 3057,
-   "lines": 79,
+   "path": "components/city-background.tsx",
+   "sha256": "61d40db6f786bfad17e9220c6edb18ce41dcd172e8a89bb0143a793c8ef10d0a",
+   "bytes": 10284,
+   "lines": 308,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/code-block.tsx",
-   "sha256": "e74ecd89948df49f23f96fa51d86337276db340657b90554f225dfd30f4d9a19",
-   "bytes": 4025,
+   "sha256": "6870dc10db3a43a72fff8aefc6fd5e5826f7816db1bf039862aba8fd69b94a92",
+   "bytes": 4024,
    "lines": 98,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/command-palette.tsx",
-   "sha256": "8a1fef9fd36e5de74c06e8ce1fc16fa82e9f442df8344ed7fe83c4c9bfb3ea08",
-   "bytes": 4679,
-   "lines": 114,
+   "sha256": "dbabc1163feac475b3d0c3b92c8029d69115085a7f058793f9a2bc69b6b065f2",
+   "bytes": 4388,
+   "lines": 109,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/composer.tsx",
-   "sha256": "2fa69c1cd556362f9aa6a6d8a8df7056d3daf0dec1099568c0ef73f8b11a4f94",
-   "bytes": 16735,
-   "lines": 426,
+   "sha256": "0cf2a91bf2ba50954067abaaf1e548b6122f4a59c06e10bf956a19ec2c914927",
+   "bytes": 17547,
+   "lines": 448,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/dialogs.tsx",
-   "sha256": "a9093e823c9a0ccdea81f87f187abbf489e9526b7ad3f21b7004b774fd7b1bc5",
-   "bytes": 7069,
+   "sha256": "c52fd5c60ffc9a350bbdd8af97e4384feddc905fec17aefb286a192ac1f88b59",
+   "bytes": 7077,
    "lines": 183,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/home.tsx",
-   "sha256": "1983126ef6ae7ad32ea35ee12376122b613017cc76d6ec76911306576da5e8c0",
-   "bytes": 5917,
-   "lines": 137,
+   "sha256": "04c401206b9131b8efa2e63c75bfbf63389bc7802cc613415229845d8d2c1586",
+   "bytes": 4686,
+   "lines": 115,
    "step": "interface",
    "kind": "required"
   },
@@ -737,6 +841,14 @@
    "kind": "required"
   },
   {
+   "path": "components/login-screen.tsx",
+   "sha256": "1cfc3afbc077d7123d5ebc1006f90cb60197528650a100039061d178f4200265",
+   "bytes": 13991,
+   "lines": 290,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
    "path": "components/markdown.tsx",
    "sha256": "4cc2741330a7a3cc18b5c9bc23acdd93c724ca582ff8f05539a2f957e1f6b663",
    "bytes": 2148,
@@ -746,49 +858,57 @@
   },
   {
    "path": "components/message.tsx",
-   "sha256": "138cf111cfa42f1348ced9d624c6fc92603d3060e9508eda5fb6cc2ab5a8cda4",
-   "bytes": 13907,
-   "lines": 345,
+   "sha256": "956a61c1461e508c1be1869fd277552b9b4e5a2e6acd35ddda6e9dd98cfa4a76",
+   "bytes": 13992,
+   "lines": 346,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/model-library.tsx",
-   "sha256": "b2530fec0ff2848e0049a056ee48016cf276991fde556d1e04be5eb8bb311f95",
-   "bytes": 10234,
+   "sha256": "0db938af631c9081493ecb585539b1f8ba6d8fe60b662c334f7f93f29b374c05",
+   "bytes": 10225,
    "lines": 198,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/model-parts.tsx",
-   "sha256": "2fe7b6468a4136e75c80ad978d97c9d3e17067fe678a417ae0ed464af87b5d9e",
-   "bytes": 4119,
-   "lines": 96,
+   "sha256": "09669e4257bc214e119ad37b3b407258a50678350f2bd6ed08ec2d375122abbc",
+   "bytes": 4049,
+   "lines": 92,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/model-picker.tsx",
-   "sha256": "cb4c59e7e743db95dc6db573fc03511c6e47da9bd7406c6ddc80da9481c5ca2c",
-   "bytes": 5891,
-   "lines": 128,
+   "sha256": "e9b31fbbc0471035bdfcbf37a1a4a4183fbda30b241e4407865cb2150473841e",
+   "bytes": 18024,
+   "lines": 408,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/pages.tsx",
-   "sha256": "09007a1d15774d777662668664632d2ee21a5b320fd17487f0263f4db52462b2",
-   "bytes": 26765,
-   "lines": 679,
+   "sha256": "c273376c5b6a6d8667d64a9ef88fd4289a50da0f1ab2b1944f67b9a0ff617835",
+   "bytes": 26779,
+   "lines": 678,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/route-info.tsx",
-   "sha256": "a065cdec0041d836cfd1c758030702ebe6c725168da91ba93ee031281c7d075b",
-   "bytes": 8717,
+   "sha256": "379a47f35089d1be53148620ef492cb916c3d83c6fc0c09ba8e48cff155f5d8c",
+   "bytes": 8850,
    "lines": 179,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/router-strip.tsx",
+   "sha256": "0f095d4d843e44ff6be21133eeae54b5507daab2ba1aab295a02866e72dad591",
+   "bytes": 3425,
+   "lines": 86,
    "step": "interface",
    "kind": "required"
   },
@@ -801,18 +921,26 @@
    "kind": "required"
   },
   {
+   "path": "components/scene-choice.tsx",
+   "sha256": "d347f3f0cd1b84c7d8380bf72ec41f4672769d76b01361a813ad44091218bd00",
+   "bytes": 2369,
+   "lines": 45,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
    "path": "components/settings/appearance.tsx",
-   "sha256": "6c6caef6336c05cf157e9904fa26e986534d0c60ac02889830622aeb69e584ae",
-   "bytes": 6823,
-   "lines": 133,
+   "sha256": "03d490d0aaef579d77b93f1f763b8e11aea91b9228018f48c3b72f5b5c24321a",
+   "bytes": 6979,
+   "lines": 138,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/settings/capabilities.tsx",
-   "sha256": "a07b3e0cc1cfdb794ad8d8e424eedfcc45b317ee427d340a9e05ffb301d8d882",
-   "bytes": 4217,
-   "lines": 117,
+   "sha256": "0326776cd1236e6b1b3571ee9f5af22f4062d7fcb69513494b701d46726ab593",
+   "bytes": 4687,
+   "lines": 123,
    "step": "interface",
    "kind": "required"
   },
@@ -826,8 +954,8 @@
   },
   {
    "path": "components/settings/dialog.tsx",
-   "sha256": "52bd4d74707b83179cf98d373b9ef7eda6d47f4292e6e333ea4f62cb3dce04d0",
-   "bytes": 5936,
+   "sha256": "ff67c28389199c259a41911aa191fcad05b144e286b3dde215a008865a3c0b8f",
+   "bytes": 5940,
    "lines": 110,
    "step": "interface",
    "kind": "required"
@@ -849,25 +977,33 @@
    "kind": "required"
   },
   {
+   "path": "components/settings/palette-picker.tsx",
+   "sha256": "58fbcef05a5d9b25d2b1a0550076ec90680b79fe420cebd700c8bc3b3bc58d1b",
+   "bytes": 6169,
+   "lines": 120,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
    "path": "components/settings/parts.tsx",
-   "sha256": "3670f89ebb698bb870dd4a6df0177a63dce497131b82a41b722c350aeb6b3d83",
-   "bytes": 4794,
+   "sha256": "a17aa9aa4806d0e1ad7ec55219fba156989091b49bc353c2881458467ddf6799",
+   "bytes": 4798,
    "lines": 148,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/settings/privacy.tsx",
-   "sha256": "6d7b94f4f4d90838d33e9f97212f05872c974a7327514224cfe293c41b072c07",
-   "bytes": 8095,
-   "lines": 209,
+   "sha256": "dea41e6dc9691acdcbf113edc7771a7a540033be7c9607c6caf10da24c7a3f62",
+   "bytes": 7660,
+   "lines": 195,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/settings/router.tsx",
-   "sha256": "28d481601a27513c5dfee085b8b494063467ce06b5475e91fac7d90328f62bd7",
-   "bytes": 14388,
+   "sha256": "3c2edbecd81b7803ca37148fd5b1a49f12b91543819cec4b504067356f1e02f3",
+   "bytes": 14355,
    "lines": 270,
    "step": "interface",
    "kind": "required"
@@ -890,40 +1026,64 @@
   },
   {
    "path": "components/settings/usage.tsx",
-   "sha256": "2510eda6399acc41e50954d2ea6a7c8835a7dbe240bb1b9913659966d4fdffee",
-   "bytes": 3416,
-   "lines": 85,
+   "sha256": "2834fd47302c6e23f65103bbd4f6f01810f01c993d92bf9bb814a50518174c84",
+   "bytes": 3167,
+   "lines": 75,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/setup-card.tsx",
+   "sha256": "87e31fc29dc28fa294e1706aac1fe175db990614d0e1aceb47e480986adfeb56",
+   "bytes": 2260,
+   "lines": 57,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/shell.tsx",
-   "sha256": "f8523abc15a1b8162fb2f6293177b50074b59e7f88d4f3b8c970d2b5fa8d2c4e",
-   "bytes": 13703,
-   "lines": 366,
+   "sha256": "1829c951507ae03a61ff61f0256cad17800024faa2e82a66f0647dcd11e4eeae",
+   "bytes": 15626,
+   "lines": 406,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/signal.tsx",
+   "sha256": "842e23a5a4b3da46635aaa1ecd5dc2df24da716a35eb406fe468c1855c7f487b",
+   "bytes": 690,
+   "lines": 14,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "components/skyline.tsx",
+   "sha256": "9da52cea4a5abf4240237ca487631c3fec731cbf655cd8a6fe0e756a55dd558a",
+   "bytes": 21319,
+   "lines": 43,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/thinking.tsx",
-   "sha256": "a1270da19886c09f3b8496dc1e42cd1a2669a570025c70e4046bd777a0bf9a43",
-   "bytes": 1658,
-   "lines": 38,
+   "sha256": "35d5355a322da2378675cbab571a1b0da6054904493d91f8886b66b4648c1fd1",
+   "bytes": 3453,
+   "lines": 86,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/ui/accordion.tsx",
-   "sha256": "ca0e041a2cc115c48a9f6f6036ea174966f6f55e9195f8fdd7b97964a14f4f28",
-   "bytes": 2034,
+   "sha256": "1bdc1c2df1062c9bdfe7625e9c313a3f4f090471b92c82acc92efc5d4e5d7119",
+   "bytes": 2030,
    "lines": 64,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/ui/alert-dialog.tsx",
-   "sha256": "8f5322000f22857ced049ef862d3b46f7aebf325e257ff62744fe80ec8abda58",
-   "bytes": 5426,
+   "sha256": "e6dafd73f204d36b8986820ed2e28a37fcffdd2bcf98f310b57f9d975d49dd16",
+   "bytes": 5441,
    "lines": 195,
    "step": "interface",
    "kind": "required"
@@ -954,8 +1114,8 @@
   },
   {
    "path": "components/ui/badge.tsx",
-   "sha256": "0311bb21a5dc8c1e3d70ffc35cccc375c90e2f08bb0f0dd943dad72c19ed45ff",
-   "bytes": 1775,
+   "sha256": "1dc18e2440d6be85e2a99d5de1462f33a5951b454095b0dbf78eb94f5d7ab573",
+   "bytes": 1766,
    "lines": 47,
    "step": "interface",
    "kind": "required"
@@ -978,24 +1138,24 @@
   },
   {
    "path": "components/ui/button.tsx",
-   "sha256": "453a74d6b22bbde8dcb4bf0656896bd32b6db0309b49f8c16d1a5ef17bf4a39d",
-   "bytes": 2690,
+   "sha256": "bbee20236c31897bfd3a766a840f9f3d92dddf4f89478aadb8647a540997dbe3",
+   "bytes": 2725,
    "lines": 64,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/ui/card.tsx",
-   "sha256": "39480d5b63e46554f1cfcedaa91052c848bda5c45d7a5dda80fe91e7be604fb0",
-   "bytes": 1986,
+   "sha256": "61c8902258e9e4c13136d5187cf09d54c06727b057644815a0795067782282bd",
+   "bytes": 1976,
    "lines": 91,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/ui/checkbox.tsx",
-   "sha256": "aecfe05949b0ff2cd31299d2e2c8bfa96e6cab5ffb9f893dbed3c804db65a239",
-   "bytes": 1200,
+   "sha256": "f13feeb33652b0e2dc828733ce2275740eb1bc421c17767bc1c9d77c60f0704a",
+   "bytes": 1196,
    "lines": 30,
    "step": "interface",
    "kind": "required"
@@ -1018,16 +1178,16 @@
   },
   {
    "path": "components/ui/context-menu.tsx",
-   "sha256": "487dd1f3df1648446a63062ad09fa30464051c3f9d55938918f2019cbfc2f99f",
-   "bytes": 8254,
+   "sha256": "3b4178d7868c115e6fff5af233a8827eb638b5dd7b38d9c19490b3c5a7d8948b",
+   "bytes": 8482,
    "lines": 250,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/ui/dialog.tsx",
-   "sha256": "f1f69eaeb87bbafcdfd4d461bbb7b3e8b8d11a8b7d4195f302c742f8f8370ddf",
-   "bytes": 4395,
+   "sha256": "759763cf5a0494e42198ef484bd10b13f72433212ccc90673a5f0f2a149b8f7d",
+   "bytes": 4410,
    "lines": 157,
    "step": "interface",
    "kind": "required"
@@ -1042,8 +1202,8 @@
   },
   {
    "path": "components/ui/dropdown-menu.tsx",
-   "sha256": "3e79437422d18b14a5a90b1131e17a6c2b894a8f4f908d5718bf4b67647ecf3d",
-   "bytes": 8404,
+   "sha256": "a3ab586586a24365993c729f03312060cbd1f79f276667d10d0d8fb1770b452e",
+   "bytes": 8632,
    "lines": 255,
    "step": "interface",
    "kind": "required"
@@ -1066,8 +1226,8 @@
   },
   {
    "path": "components/ui/hover-card.tsx",
-   "sha256": "354a53c7125af614c5f5f4c12efe8c16450264e7a67e9cef765842d934b606ce",
-   "bytes": 1512,
+   "sha256": "0e7a52f851bd11ae47bb5e19139f065ca7f15c39932a1799d485c28f1fc96172",
+   "bytes": 1540,
    "lines": 42,
    "step": "interface",
    "kind": "required"
@@ -1082,16 +1242,16 @@
   },
   {
    "path": "components/ui/input.tsx",
-   "sha256": "72c28312b225fc34fd2ec4e9dee08605e312e04b6cbd66053ac5186e79c960c1",
-   "bytes": 994,
+   "sha256": "4f051820731d48fb8bca39adb8c9768753aa3f8ab9cbf54a2af93c4c8f6cff26",
+   "bytes": 997,
    "lines": 20,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/ui/kbd.tsx",
-   "sha256": "6088c3a5432338b1719c17e9b5d0e1fa74fd1f66060f248fc88909d33a82cd13",
-   "bytes": 862,
+   "sha256": "9d3d6f38e98f447f9b72e5a850df24a47c58f6f4e40bfac66592db194ae08aa9",
+   "bytes": 806,
    "lines": 28,
    "step": "interface",
    "kind": "required"
@@ -1106,24 +1266,24 @@
   },
   {
    "path": "components/ui/menubar.tsx",
-   "sha256": "7e1b086ad051519e5748fc47d23646ea31029191c7b30001afce2d069b1fe627",
-   "bytes": 8303,
+   "sha256": "5dec2daee0d1d49b851c92c9da91990779cbe1f45348b8083b39b916cb67914a",
+   "bytes": 8574,
    "lines": 276,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/ui/navigation-menu.tsx",
-   "sha256": "0c4158a7a690a82f3a342790cec8fa903605f0efab99e9b441e6fc8069fec252",
-   "bytes": 6650,
+   "sha256": "0b6f01d82bd9f0c734c06f8d1d7496ba12bd0c26e4346810b1efc32a1b7da14f",
+   "bytes": 6670,
    "lines": 168,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/ui/popover.tsx",
-   "sha256": "58beec6b289ebdc0e44724003345540e85462fc1a1f7bdb29626966e9444f103",
-   "bytes": 2343,
+   "sha256": "2410faa1a569e44c12183aab74953a643f59c930d8fedaaf5ad80ebbc6e275c3",
+   "bytes": 2371,
    "lines": 87,
    "step": "interface",
    "kind": "required"
@@ -1138,8 +1298,8 @@
   },
   {
    "path": "components/ui/radio-group.tsx",
-   "sha256": "785d0ac01d9a4b92a78d26003baa5b96bf67e20a3ed19edd11567d0edea33d4b",
-   "bytes": 1446,
+   "sha256": "fd7c63fb99f77c40b529a607c7221605485571f0ded700159c676f87cd2f4b47",
+   "bytes": 1442,
    "lines": 43,
    "step": "interface",
    "kind": "required"
@@ -1154,16 +1314,16 @@
   },
   {
    "path": "components/ui/scroll-area.tsx",
-   "sha256": "2222cf057c257649248fbf433e052acc5a3ca661faa86b135c2de3da8fd57262",
-   "bytes": 1625,
+   "sha256": "a04ad5100d263a539bbcefc45526d5ea371ae4a0ddd85014be8531dfed838ada",
+   "bytes": 1621,
    "lines": 56,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/ui/select.tsx",
-   "sha256": "6af857f87cb0ff49b1d60e99bcb4f4107c00111d8af0bf655322379347a2ac87",
-   "bytes": 6339,
+   "sha256": "4b9954af4adab84ef187ae7a3e33659b92f2530b6e34f1400bdc148854a097e7",
+   "bytes": 6406,
    "lines": 188,
    "step": "interface",
    "kind": "required"
@@ -1186,8 +1346,8 @@
   },
   {
    "path": "components/ui/sidebar.tsx",
-   "sha256": "718441093f6ed4392de6628dabd6ea009f90e656ba29343e55640116d8e1f55b",
-   "bytes": 21901,
+   "sha256": "7e29ade59cbb95732f7ce3e244e56493ec8fcd46b859b1d3a0da2334acd3dde4",
+   "bytes": 22115,
    "lines": 732,
    "step": "interface",
    "kind": "required"
@@ -1210,9 +1370,9 @@
   },
   {
    "path": "components/ui/sonner.tsx",
-   "sha256": "c1ab29b69d3a8b281de47dc9593aae8948fae81134b8b3c2e29a6c414cf8adfc",
-   "bytes": 989,
-   "lines": 35,
+   "sha256": "da7c37569aa13f99300bb6040ac2e4b5df5d66feebf981663382a75225d4323a",
+   "bytes": 1316,
+   "lines": 41,
    "step": "interface",
    "kind": "required"
   },
@@ -1226,8 +1386,8 @@
   },
   {
    "path": "components/ui/switch.tsx",
-   "sha256": "3431733589e4c331b79d898237fe8ced9f0fe2bffcb63dae64acaa1331578cb7",
-   "bytes": 1555,
+   "sha256": "14f5999c2a8cd5e00dafa55594c46514a2395973cb7144a75d1d3e6337adef40",
+   "bytes": 1551,
    "lines": 33,
    "step": "interface",
    "kind": "required"
@@ -1242,16 +1402,16 @@
   },
   {
    "path": "components/ui/tabs.tsx",
-   "sha256": "0c8baec0a5e518b740582f547ed9d1c52fd179a61d52f891de8062dfb23edc64",
-   "bytes": 3768,
+   "sha256": "be93eeaa8e76398c51d74e8f506f4b2f2d4f150eff49716e2a18c70371b5eb3c",
+   "bytes": 3764,
    "lines": 89,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/ui/textarea.tsx",
-   "sha256": "25352588ff3054fe0e2555214f7a83bf6f98bb00853de418b883d8cd9f0213c4",
-   "bytes": 783,
+   "sha256": "631455d025f49cbe0064c132805f5d25dc341481bb8d296f7ee70f50444ee32d",
+   "bytes": 773,
    "lines": 17,
    "step": "interface",
    "kind": "required"
@@ -1274,25 +1434,57 @@
   },
   {
    "path": "components/ui/toggle.tsx",
-   "sha256": "a1043589c799409288595a6cc4985615eb0938e60a231a81aaa192e3cfb98e93",
-   "bytes": 1551,
+   "sha256": "8ced5e4ccf94c770189ad44feda600399c49cd8f468906a515fbca2d906d513e",
+   "bytes": 1547,
    "lines": 45,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "components/ui/tooltip.tsx",
-   "sha256": "3d4f06251228b2a9ffb8176510f8548dbaef680efb3a98d8a6ac3c5f387a333f",
-   "bytes": 1816,
-   "lines": 55,
+   "sha256": "cb4cb4d7bb2a86ca13a03ae2a66fdc8bb4697edc67354dad89f7286a4eeaa66e",
+   "bytes": 1697,
+   "lines": 54,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/account.ts",
+   "sha256": "4c2459d195c911a7ec5c0d1d532ea719fb93aaffb28300613394e6388071a708",
+   "bytes": 9860,
+   "lines": 221,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "lib/actions.ts",
-   "sha256": "7528595ad5085f27208349287c7a3e71748d8b5f00386370e42089d710b91aa3",
-   "bytes": 5817,
-   "lines": 144,
+   "sha256": "4e96f9129dd9a3a506343c54dc15f0748e13fdc541a2c6f93d81cc823cf23067",
+   "bytes": 5860,
+   "lines": 143,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/artifact/assets.ts",
+   "sha256": "93caefb864483a7634ceb24320f7a11e2655e77707ae9e6f64e557b394431ae2",
+   "bytes": 1184,
+   "lines": 28,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/artifact/detect.ts",
+   "sha256": "a4e18c05fe4988cbce2b0c0a16909ad7f4ca276d3e833ec37ea9b70b8ef41275",
+   "bytes": 5607,
+   "lines": 142,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/artifact/srcdoc.ts",
+   "sha256": "c675d3834678a5398c1fe1ab1334ce1353e154e566496c012f2893662842d404",
+   "bytes": 8330,
+   "lines": 145,
    "step": "interface",
    "kind": "required"
   },
@@ -1306,17 +1498,17 @@
   },
   {
    "path": "lib/defaults.ts",
-   "sha256": "a507e503ab71773b261769f7c74522c9313747391648c9728cfb72c0787c31c2",
-   "bytes": 3931,
-   "lines": 138,
+   "sha256": "62475d45ea565cf1e0dc60e23bc7b068fd40d3cac7758d0d3c1436a1dd137cd5",
+   "bytes": 4167,
+   "lines": 144,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "lib/export.ts",
-   "sha256": "1d03ff8f9e4683bfb633cb88b9aab0ca8dfc043d8bd53d3dced2bdc2a43895ea",
-   "bytes": 2253,
-   "lines": 58,
+   "sha256": "f8301d66eabb1c391d1377b59a7e37101c44b2bfbc105d5b9585bd2bc6683d5c",
+   "bytes": 2207,
+   "lines": 56,
    "step": "interface",
    "kind": "required"
   },
@@ -1325,6 +1517,14 @@
    "sha256": "758bac9f4b00e43c82a58531bba4f28f3024aabe4b31a24c1b248a0f75b7ed0d",
    "bytes": 2117,
    "lines": 64,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/hooks/use-dark.ts",
+   "sha256": "501ccf6ae797b5a8fb20136b974d4a3501c22b341cbd46d4ad0580f8b0918fa7",
+   "bytes": 387,
+   "lines": 9,
    "step": "interface",
    "kind": "required"
   },
@@ -1346,57 +1546,65 @@
   },
   {
    "path": "lib/hooks/use-stick-to-bottom.ts",
-   "sha256": "f0949217ff9675d0583fd5f9edf45364e168ed6946b1e61f8a649cd053de544d",
-   "bytes": 1924,
-   "lines": 59,
+   "sha256": "1927d44f06f60fc1382eca6e5cd8497daf21a563cf06099508d6bf1c203c5f50",
+   "bytes": 2450,
+   "lines": 67,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "lib/import.ts",
-   "sha256": "4abda6b095030b8cf879a3764b1f4da1e6737c062ac9eb11ca3c85bd674a1deb",
-   "bytes": 6420,
+   "sha256": "1bbfed96aba5630ac23b97b472a543ac1fbb9ff7a8c6754f57e4b9dd44b18ff8",
+   "bytes": 6401,
    "lines": 153,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "lib/motion.ts",
-   "sha256": "0b3f5f4faa6da556bfa2e47fe5055989bb46c4e1a00ce35d57feca59acf0f94f",
-   "bytes": 1774,
-   "lines": 53,
+   "sha256": "b8942c1a7624d1fcb264578272704e7ba181a0df87cba0bf8bd4a540c76a0356",
+   "bytes": 1709,
+   "lines": 51,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "lib/no-flash.ts",
-   "sha256": "05c80bf28c3d9798d153d79bb5b56c292cdeca7ee6cd1abc977c966f22b0b1c9",
-   "bytes": 919,
-   "lines": 21,
+   "sha256": "5dd439d8a6990f9297bc36ad41397c7a950862cc55dbe26244c26836b55b375b",
+   "bytes": 2283,
+   "lines": 47,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/palette.ts",
+   "sha256": "4a8e65aa7f8529b4e18bb0c9b400cd32e0bf2e38c43e0a67cd2093eab1f9af4f",
+   "bytes": 2070,
+   "lines": 51,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "lib/parse.ts",
-   "sha256": "c71224c7be165ec19035e1a646973dbaf6a2354f7c452701c8849e26deba16cb",
-   "bytes": 6429,
-   "lines": 212,
+   "sha256": "df47709543fbb50e95677ff5a5eca26f3686498b9a9048a35d028aeb0a6a6863",
+   "bytes": 11735,
+   "lines": 326,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "lib/prompt.ts",
-   "sha256": "1c4be5556f333702b4c1654ec1a144242708da352589df2e8e0d8b4b61b28648",
-   "bytes": 2124,
-   "lines": 58,
+   "sha256": "5af164060dc7f9bda4e86261b96a13e46bdc1100ea9d439facf98035bfff4f73",
+   "bytes": 3675,
+   "lines": 70,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "lib/provider.ts",
-   "sha256": "84f3e2dd31695abe12cfc60b8a84bafb4628e55965e7176e8d2f2e34a07e31a5",
-   "bytes": 6447,
-   "lines": 164,
+   "sha256": "2e453f14b690e30de20ebce3da717da01297b967c63fa8bfe434943ab462174d",
+   "bytes": 6740,
+   "lines": 170,
    "step": "interface",
    "kind": "required"
   },
@@ -1417,24 +1625,120 @@
    "kind": "required"
   },
   {
+   "path": "lib/scene/city/atlas.ts",
+   "sha256": "a078db9af1193daedf7643d291813699033a8a0d902bd4d7c6f25d92a9713f50",
+   "bytes": 7246,
+   "lines": 163,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/scene/city/engine.ts",
+   "sha256": "7650447b7c48a17f1f5c07aee246f313982d5656847cef6294a0408b0f53d3e8",
+   "bytes": 25445,
+   "lines": 702,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/scene/city/glsl.ts",
+   "sha256": "eedd669770e8b5e1279fca75fb9f37952a646f4c37ff14f2eee73eeb8fc01a2c",
+   "bytes": 25518,
+   "lines": 714,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/scene/city/governor.ts",
+   "sha256": "cdef0fca7930e41893654f46e440a4ce8e230d5c82d72d1b912666286cd540de",
+   "bytes": 3524,
+   "lines": 106,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/scene/city/layout.ts",
+   "sha256": "bb05aea9264b988a4e71b2d86130d28cec2ac655b78cbda6ae9641858f2b016d",
+   "bytes": 9168,
+   "lines": 262,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/scene/city/rng.ts",
+   "sha256": "529f94eae35aa452b9ad02b0199504e527c8abd956b2234eb56f1882a4d71f25",
+   "bytes": 920,
+   "lines": 29,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/scene/color.ts",
+   "sha256": "dc09b65f0af92528ae9607250c520484ddc821fb297ef3973b972deb96da90ca",
+   "bytes": 2193,
+   "lines": 57,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/scene/hue.ts",
+   "sha256": "4f9e6357df32ecf0642366c5b753a12f431a427c356760f81399d7817effe64c",
+   "bytes": 1822,
+   "lines": 37,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/scene/palette-css.ts",
+   "sha256": "b50d09a37c4c31c9fad8d47e385ca99ae752a551559c196c52359091a3231a8b",
+   "bytes": 6701,
+   "lines": 172,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/scene/palettes.ts",
+   "sha256": "b95b8e3f125c4cd135b026d5358a4ff33d6204f21f49e23bc78f23f543883059",
+   "bytes": 5940,
+   "lines": 164,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/scene/status.ts",
+   "sha256": "497ac402ee4fd006ad4c2dc7fcea88cca1b13ebe64ef9e7fc74a8f88dbe630f4",
+   "bytes": 2842,
+   "lines": 78,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "lib/standalone.ts",
+   "sha256": "f25a14c1a8271371d506117adbd96450eca880bebdc1f820d7e61d2c27c16f94",
+   "bytes": 220,
+   "lines": 2,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
    "path": "lib/store.ts",
-   "sha256": "45bbfeeca59284ad27bfafc61e082df0311838fd43345348298d3a3215149d64",
-   "bytes": 15786,
-   "lines": 438,
+   "sha256": "a7d100c599f73baf771a4129e9a8091f9ec76fb84ffee07969f8ba63e7c1d71a",
+   "bytes": 20416,
+   "lines": 548,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "lib/sync.ts",
-   "sha256": "a9a61fc69f3238cd0e35231405d314fa04fae9e1d485d31c048bc3224542fa96",
-   "bytes": 6031,
-   "lines": 182,
+   "sha256": "a1f52313f0562397572bd0cbd7b01a488dcb009418bfedb4a2565a68f034f8ee",
+   "bytes": 6112,
+   "lines": 185,
    "step": "interface",
    "kind": "required"
   },
   {
    "path": "lib/theme.ts",
-   "sha256": "6bfca4148e22d9db75d8c1d72d33686fd41d88013494ef5b6fa78ac94a44553d",
+   "sha256": "330905c717fe4ebc7878de41195cf46db21aee2c9206a0c9723fd67b26ed6afd",
    "bytes": 3625,
    "lines": 101,
    "step": "interface",
@@ -1442,9 +1746,73 @@
   },
   {
    "path": "lib/ui.ts",
-   "sha256": "abfbe90faf6d7f72a3394d9a26a0dcb79580eee987cf5f0740615905845a511d",
-   "bytes": 3777,
-   "lines": 119,
+   "sha256": "766c74261f6e3b4b7556d6564e77fdfea97611cc42febb48931defcd49e182cf",
+   "bytes": 3460,
+   "lines": 110,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "public/artifact/runtime.js",
+   "sha256": "546f86b1be579ce1ea322653e5548b020df8adc508adfeea2c8abf481933ab91",
+   "bytes": 1839586,
+   "lines": 218,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "public/artifact/tailwind.js",
+   "sha256": "2d0753619d37bb4452761b874ffc6ae6429e9e051eb26f44c5ac83c7362fc7b1",
+   "bytes": 287414,
+   "lines": 952,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "scripts/artifact-runtime/entry.ts",
+   "sha256": "41dd4a5d56572eb85287145d71fdb0c7abd3046d36a90912aad8274acb0a322c",
+   "bytes": 4781,
+   "lines": 103,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "scripts/build-artifact-runtime.mjs",
+   "sha256": "600e76897050f674fe7496723c44a7808eb0496d89e975e1fb2512e199f9eeac",
+   "bytes": 1294,
+   "lines": 33,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "scripts/build-palettes.mjs",
+   "sha256": "bcc5733421eb9841a7f3b7b93200bbbe638d082361c6a82457e762d2387e1d66",
+   "bytes": 303,
+   "lines": 6,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "tests/unit/artifacts.test.ts",
+   "sha256": "4585b1597039cde1eec87c3ad77e750320ffca88d99c4733d1e7b3931401364e",
+   "bytes": 18913,
+   "lines": 366,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "tests/unit/city-governor.test.ts",
+   "sha256": "b114da14deb51d8d0d5a25cbb85d9a3c2cfc5c6badd21651f31932f176951eab",
+   "bytes": 6282,
+   "lines": 168,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "tests/unit/city-layout.test.ts",
+   "sha256": "2d3c32876307b027e0ac8ba6bea18fb5d5dbb4ea7ee002707a27b61878ee5296",
+   "bytes": 9304,
+   "lines": 213,
    "step": "interface",
    "kind": "required"
   },
@@ -1453,6 +1821,30 @@
    "sha256": "2555dbd9cfdb8dd3e3b66bd35ebcb045a4b6bccc6732e5eae56ec1e9bec23c54",
    "bytes": 5685,
    "lines": 147,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "tests/unit/no-flash.test.ts",
+   "sha256": "f4c1a4cbafb27024d540fc315eefd24ce8eac591bf35bcd76c7553a744dbd232",
+   "bytes": 6093,
+   "lines": 152,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "tests/unit/palettes.test.ts",
+   "sha256": "50709334d8bcbcbbe0bdf757ad947a6be8e26accb2e81dfdd812447ebebea8aa",
+   "bytes": 10845,
+   "lines": 228,
+   "step": "interface",
+   "kind": "required"
+  },
+  {
+   "path": "tests/unit/provider-hue.test.ts",
+   "sha256": "198cb65450b82b4469c959f98af7bfa3a338013607732efa4706e1dcef4bb2a1",
+   "bytes": 2321,
+   "lines": 48,
    "step": "interface",
    "kind": "required"
   },
@@ -1474,17 +1866,17 @@
   },
   {
    "path": "playwright.config.ts",
-   "sha256": "b0bf3afe6c7d01a34a1bd202b544825121d18b3a41061b4d1a3e0f14d3ecbaa1",
-   "bytes": 2474,
+   "sha256": "1f052e288d32b491e986c0b5c6c3d52e60b748cce85bf7fb299014f795ef954e",
+   "bytes": 2469,
    "lines": 59,
    "step": "e2e",
    "kind": "required"
   },
   {
    "path": "tests/e2e/a11y.spec.ts",
-   "sha256": "1910ca8324c0b8d6efc2d1246f4689cf829ca30933f5996265ba8ad59c6b09ff",
-   "bytes": 2034,
-   "lines": 54,
+   "sha256": "351555f7410328ec84214c1934267bf309b87f99e0500f7cd6e911f1dd21ee86",
+   "bytes": 3008,
+   "lines": 74,
    "step": "e2e",
    "kind": "required"
   },
@@ -1493,6 +1885,22 @@
    "sha256": "d2b85fca23f90dac18296d89c4116157300ddfe40926c86bf636923442d550a5",
    "bytes": 10766,
    "lines": 266,
+   "step": "e2e",
+   "kind": "required"
+  },
+  {
+   "path": "tests/e2e/artifacts.spec.ts",
+   "sha256": "7e6bb3264c14cb26e8a82e5257b6c8162a349655d04ef9e143e3726c9b449a0b",
+   "bytes": 12735,
+   "lines": 248,
+   "step": "e2e",
+   "kind": "required"
+  },
+  {
+   "path": "tests/e2e/city.spec.ts",
+   "sha256": "b25cd93fdabc207527bc553afad7e97418759b138e9cc1c4523d59d62958b045",
+   "bytes": 8827,
+   "lines": 181,
    "step": "e2e",
    "kind": "required"
   },
@@ -1506,57 +1914,89 @@
   },
   {
    "path": "tests/e2e/helpers.ts",
-   "sha256": "c953fb4c5e31c61e31f70523fee1fa1c909610d213196f1c3cb61ed246ad9c47",
-   "bytes": 5709,
-   "lines": 125,
+   "sha256": "697f6878ea4408438d31a239e40e3f38dee12662614a8e59f2781fd3a5d41ccf",
+   "bytes": 7988,
+   "lines": 171,
+   "step": "e2e",
+   "kind": "required"
+  },
+  {
+   "path": "tests/e2e/login.spec.ts",
+   "sha256": "92d7c765a2fcaaf19051fbbf96b71aaf88ff7f284e73d39e79c94dfb501a69b2",
+   "bytes": 10572,
+   "lines": 217,
    "step": "e2e",
    "kind": "required"
   },
   {
    "path": "tests/e2e/router.spec.ts",
-   "sha256": "c4bc043d8aeff2b68bf995899f574755e52e89966f5d0bed84d51eb76d208593",
-   "bytes": 30139,
-   "lines": 572,
+   "sha256": "954996e48340120bd07496f64cd486af3ebd95204fdc1f1c1ad9397015ed7218",
+   "bytes": 32177,
+   "lines": 610,
    "step": "e2e",
    "kind": "required"
   },
   {
    "path": "tests/e2e/servers.mjs",
-   "sha256": "ef3494b2e173ed69eb91b4623ddb6fe0fc7a6d685d960f5c710a3162a8c3f79e",
-   "bytes": 4609,
-   "lines": 104,
+   "sha256": "68f8454ecf58f39dd3de791ef5e5e1683fd9b10c0fad6b1a0240eb04389f5813",
+   "bytes": 5035,
+   "lines": 107,
+   "step": "e2e",
+   "kind": "required"
+  },
+  {
+   "path": "tests/e2e/thinking.spec.ts",
+   "sha256": "3c48f4683d665faee44f34d43367913cc6e2a1e931d1dd2e434115ad68f3dc75",
+   "bytes": 5466,
+   "lines": 129,
    "step": "e2e",
    "kind": "required"
   },
   {
    "path": "DESIGN.md",
-   "sha256": "a33219ef0c1a4264262cba0310057072da9c0a86c20c7cdd045a6f10a718142d",
-   "bytes": 29565,
-   "lines": 385,
+   "sha256": "b120714ce89315e74c3200b40dc5c4bd1725072459cc2ee3eb4c81d1eaff828a",
+   "bytes": 39554,
+   "lines": 484,
    "step": "docs",
    "kind": "optional"
   },
   {
    "path": "README.md",
-   "sha256": "7d3cf0e42e27b8a1d167e38fcb3f6e11c575d427b5ba4e17642bd6337b19bfd7",
-   "bytes": 17014,
-   "lines": 224,
+   "sha256": "5a9aad2d1b01bcde5ac787f823e65a728bdf047b8f671f42a6e2323fb6398275",
+   "bytes": 34858,
+   "lines": 363,
    "step": "docs",
    "kind": "optional"
   },
   {
    "path": "TOOLKIT.md",
-   "sha256": "0df4690ede999413e2217cb9f6c9a19aa17ae61a1a9ec600d0567b149584a573",
-   "bytes": 9999,
-   "lines": 77,
+   "sha256": "b58c43b13b4675c8d8bf7d4463fbbb04abccbdf183ba7a9f378e2cf992ebd7f1",
+   "bytes": 18340,
+   "lines": 130,
+   "step": "docs",
+   "kind": "optional"
+  },
+  {
+   "path": "docs/ACCEPTANCE.md",
+   "sha256": "819f8efdcf1c60d06ff53aa78b674193cfa17ebce54fb6e4237793be429b6387",
+   "bytes": 24611,
+   "lines": 248,
    "step": "docs",
    "kind": "optional"
   },
   {
    "path": "file-tree.txt",
-   "sha256": "842b610e71b731c2c357da3c04f3450a33d0c1bd72c0edde93b79cc7a0aaa376",
-   "bytes": 1103079,
-   "lines": 14671,
+   "sha256": "1eacb0c7a9a599bb8444614aa144fa4115cd2ce6383b55dd62a32a162337d106",
+   "bytes": 2873809,
+   "lines": 35996,
+   "step": "docs",
+   "kind": "optional"
+  },
+  {
+   "path": "public/artifact/README.md",
+   "sha256": "faf50bba8af8d8b5c318540cf7dc89598d8a6301e3b13dc9d146a179c328c2a8",
+   "bytes": 2674,
+   "lines": 36,
    "step": "docs",
    "kind": "optional"
   },
@@ -1570,8 +2010,8 @@
   },
   {
    "path": "preview/index.html",
-   "sha256": "aceae9001c8833f88b9372e64804f13d093b4555028ddf3be961ad3644e8be0f",
-   "bytes": 1344,
+   "sha256": "b48cecdd7a13a592b9e10c3c066da4aec160fffeb3225751bbf78de2ec9fb9a7",
+   "bytes": 1689,
    "lines": 23,
    "step": "preview",
    "kind": "optional"
@@ -2996,107 +3436,55 @@
  "pack": [
   {
    "path": ".github/copilot-instructions.md",
-   "sha256": "bf8b3792faf72482e9d4f303b6f4ba19b0b27d3c843b355709dbcfdcf9792132"
+   "sha256": "c3cf8052938b9109be0af46915efd23a94850d249a8dcff607f469ee752c5c62"
   },
   {
    "path": ".github/instructions/api-routes.instructions.md",
-   "sha256": "a21806dca16ed134adac15ea6f1ab4ea212ff2740257b4ddfbbe2678d2eadf6b"
+   "sha256": "cd5e0ea8fecaddcbaa2925ba3860d9df9cf1f5f365ad5e30b9ea1ceed6e0f3e7"
   },
   {
    "path": ".github/instructions/components.instructions.md",
-   "sha256": "147449e6e6ce5a409de4042529567c8a1590c9f16a236e94770deb0182671a5b"
+   "sha256": "5ee40d59d45287a46a08d621b9cb7d3c2c86456ddb0dac98ca5ac78e58b705ba"
   },
   {
    "path": ".github/instructions/database.instructions.md",
-   "sha256": "7dd39e4bb14528828c6875de404b3d3a24d23b0e990c98ff2ae397c12fc51466"
+   "sha256": "234ffd255f12ef0cffdfab4c67606facbdefaa3d28d335a0cf68a15ee7ef4fc1"
   },
   {
    "path": ".github/instructions/router.instructions.md",
-   "sha256": "f93b5f153b4746c122f17cd6a1dad54c882257c03090458bd745630276de9ad5"
+   "sha256": "a8d4d034c205d97c1ca75de073be8f906fef598a5beabe7a9178b52182c7b610"
   },
   {
    "path": ".github/instructions/tests.instructions.md",
-   "sha256": "db3ae702d0a6bd740deae3b3a53243a268f9413b8801ab530b5188e4012b941f"
+   "sha256": "8faf169025f429f276fcd5a5de4a5f18d04b4ad27dc88a3b449bbeb6efe3b916"
   },
   {
    "path": ".github/prompts/cyphor-0-audit.prompt.md",
-   "sha256": "b8b9567984ebea83fc95766cf05623ac83e6eeb988d773a8fd01c7266644488d"
+   "sha256": "037ce356221278f2ed758b3a1b64eab730cd143d1e32037649aa46cb7ebaedaa"
   },
   {
-   "path": ".github/prompts/cyphor-1-foundation.prompt.md",
-   "sha256": "a1debe4a7c1541b8ed0ddecb731d5f5cac7035eb9a3f0b3f8c00eebd00f296cd"
+   "path": ".github/prompts/cyphor-1-apply.prompt.md",
+   "sha256": "c2c7617c69d9d0d805ce737865293164c400d90568ad93d4b4b35c711583c75b"
   },
   {
-   "path": ".github/prompts/cyphor-2-server.prompt.md",
-   "sha256": "84ecd95dc273b7f1d02b1e3b0caad1309ae0c75ec060ff6f9169003b73f86b78"
-  },
-  {
-   "path": ".github/prompts/cyphor-3-router.prompt.md",
-   "sha256": "5c7269d958762b450abf4597674a4aa70a6e7afc0f6fda0e83cb77a3cef8521a"
-  },
-  {
-   "path": ".github/prompts/cyphor-4-interface.prompt.md",
-   "sha256": "86bf07d5388eb5763fbbc7382263cb9a1a5be75d5b44f7f12492eb1496df3cec"
-  },
-  {
-   "path": ".github/prompts/cyphor-5-tests.prompt.md",
-   "sha256": "555b9181dffb578dea07525dc08a781f6f7afe3979f38be642eec3d2028a66f9"
-  },
-  {
-   "path": ".github/prompts/cyphor-6-final-check.prompt.md",
-   "sha256": "0f5be841b4612c5ca2070f43b4ddc7daef7415a8df18c3ed822fbd5bc2b3afc8"
+   "path": ".github/prompts/cyphor-2-final-check.prompt.md",
+   "sha256": "e84a84fd4d6059cba8d71d5b979c43e8cfdf37d00287d6efab21258ab36c7c1f"
   },
   {
    "path": ".github/prompts/cyphor-fix-file.prompt.md",
-   "sha256": "1120de42130586e8105c43cd376cd018dc94c1ca0585720d1e445a59f5690676"
+   "sha256": "3d33c99e9cffe636783289b791c9c433023edf7f57edac26671fdf729049100b"
   },
   {
    "path": "AGENTS.md",
-   "sha256": "83bbe4f94631a1164832ae2fac2529f70aaafdc0614b71169509c9442bb0b3f9"
-  },
-  {
-   "path": "docs/API.md",
-   "sha256": "8d1f5632e6ac375b57533dbb17dfcb8163e3c3a1af711e88d11336960e236335"
+   "sha256": "047c4aade2188df96226b5784354a5af3ac94287be27ae1c7b60f10d996cd4a9"
   },
   {
    "path": "docs/APPLY-GUIDE.md",
-   "sha256": "24a6408111f8b2461dd591a0f1fa3977b0f1c639af6367323a44cb9bd67037af"
-  },
-  {
-   "path": "docs/ARCHITECTURE.md",
-   "sha256": "ac86074515bbe16f3dd88daaff7d2e6f9eb63bf4c314de138ac4a978d695c16f"
-  },
-  {
-   "path": "docs/ENV-AND-SECURITY.md",
-   "sha256": "5ea19ce885619ad13dc301c488a4f4aee44068b589212d8eda4c61d176f27779"
-  },
-  {
-   "path": "docs/FILE-MAP.md",
-   "sha256": "ced551e8514748be31592764bdfe78b6a6cda6525c2a1b95e6efc15d95fcaeb5"
-  },
-  {
-   "path": "docs/README.md",
-   "sha256": "2b70507284da5a281516371d133737273041cfe0fcc9293db34cb1aa1197fdc0"
-  },
-  {
-   "path": "docs/ROUTER-AND-GOD-MODE.md",
-   "sha256": "9d98799295e728c4545f9636b4640bc2b9369412400a890874f9d07a7fdf3d27"
-  },
-  {
-   "path": "docs/TESTING.md",
-   "sha256": "626afa80ee01b2295f95c5638dffb8e031e02cfe6dadbfb7474207b29c4bc1ad"
-  },
-  {
-   "path": "docs/TROUBLESHOOTING.md",
-   "sha256": "82d2a07e344308e53919350eeb427bee0508682d48c11aa8bda29e13e1f4d1dc"
-  },
-  {
-   "path": "docs/UI-AND-DESIGN.md",
-   "sha256": "c6ecfcda5af20d3a4595ccc32e8ce86de92ee660c9c50dabbecfa60382c52b49"
+   "sha256": "b5931086215a4ee450aad6a8ce96ded8a9a03327c3373fe68a8e41270fb9da05"
   },
   {
    "path": "docs/tools/verify-files.mjs",
-   "sha256": "fc33700d51e00250037c85a8cadac0e67b716e6cfa42975e6b868e92add99db6"
+   "sha256": "1aad5b0a3228b01116fcd698766c2f8aab7f1fcd00cbcac061f5a5e59cad888d"
   }
  ]
 }

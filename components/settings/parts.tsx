@@ -10,7 +10,7 @@ export function Pane({ title, description, children }: { title: string; descript
   return (
     <div className="mx-auto w-full max-w-2xl">
       <header className="mb-6">
-        <h3 className="font-serif text-2xl leading-tight font-medium tracking-tight">{title}</h3>
+        <h3 className="font-display text-2xl leading-tight font-semibold tracking-tight">{title}</h3>
         {description && <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{description}</p>}
       </header>
       <div className="divide-y">{children}</div>

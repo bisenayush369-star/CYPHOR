@@ -18,7 +18,7 @@ export interface ArtifactView {
   identifier: string
   /** Index into the version list; null follows the latest version. */
   version: number | null
-  tab: "preview" | "code"
+  tab: "preview" | "code" | "split"
   fullscreen: boolean
 }
 
@@ -30,13 +30,11 @@ interface UIState {
   commandOpen: boolean
   shareChatId: string | null
   renameChatId: string | null
-  incognito: boolean
   generating: Record<string, boolean>
   artifact: ArtifactView | null
   /** Unsent text and attachments survive navigation and layout changes (never persisted). */
   drafts: Record<string, string>
   pending: Record<string, Attachment[]>
-  /** Bumped on each keystroke and generation step; the cipher disk advances one notch per bump. */
   tick: number
 
   openSettings: (tab?: SettingsTab) => void
@@ -47,14 +45,12 @@ interface UIState {
   setCommandOpen: (v: boolean) => void
   setShareChat: (id: string | null) => void
   setRenameChat: (id: string | null) => void
-  setIncognito: (v: boolean) => void
   setGenerating: (chatId: string, v: boolean) => void
   openArtifact: (v: Pick<ArtifactView, "chatId" | "identifier"> & Partial<ArtifactView>) => void
   patchArtifact: (p: Partial<ArtifactView>) => void
   closeArtifact: () => void
   setDraft: (key: string, text: string) => void
   setPending: (key: string, files: Attachment[]) => void
-  bumpTick: () => void
 }
 
 export const useUI = create<UIState>()((set) => ({
@@ -64,7 +60,6 @@ export const useUI = create<UIState>()((set) => ({
   commandOpen: false,
   shareChatId: null,
   renameChatId: null,
-  incognito: false,
   generating: {},
   artifact: null,
   drafts: {},
@@ -79,7 +74,6 @@ export const useUI = create<UIState>()((set) => ({
   setCommandOpen: (v) => set({ commandOpen: v }),
   setShareChat: (id) => set({ shareChatId: id }),
   setRenameChat: (id) => set({ renameChatId: id }),
-  setIncognito: (v) => set({ incognito: v }),
   setGenerating: (chatId, v) =>
     set((s) => {
       const next = { ...s.generating }
@@ -112,7 +106,6 @@ export const useUI = create<UIState>()((set) => ({
       else delete pending[key]
       return { pending }
     }),
-  bumpTick: () => set((s) => ({ tick: s.tick + 1 })),
 }))
 
 export const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent)

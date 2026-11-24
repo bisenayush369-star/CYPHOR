@@ -6,8 +6,13 @@ import { DEFAULT_MODELS } from "./models/page"
 import { DEFAULT_SETTINGS } from "./defaults"
 import type { Attachment, Chat, Message, Project, Settings } from "./types"
 import { uid } from "./utils"
+import { DEFAULT_EFFORT, isEffort } from "./router/effort"
+import { isPalettePref } from "./scene/palettes"
 
+/** Base name of the saved data. Each account gets its own copy: `cyphor:v1:<user id>`. */
 export const STORAGE_KEY = "cyphor:v1"
+/** Appearance (theme, reply font, effects, colour theme, city) is also kept once per device, so the login page and the first paint match what you chose. */
+export const APPEARANCE_KEY = "cyphor:appearance"
 export const DEFAULT_TITLE = "New chat"
 
 interface Data {
@@ -20,7 +25,7 @@ interface Actions {
   updateSettings: (patch: Partial<Settings>) => void
   resetSettings: () => void
 
-  createChat: (opts?: { projectId?: string | null; incognito?: boolean; model?: string }) => string
+  createChat: (opts?: { projectId?: string | null; model?: string }) => string
   deleteChat: (id: string) => Chat | undefined
   restoreChat: (chat: Chat) => void
   deleteAllChats: () => void
@@ -54,8 +59,12 @@ export type State = Data & Actions
 /**
  * Streaming updates the store many times per second. Instead of serializing on every update,
  * keep the latest state object and write it at most twice a second (and when the tab hides).
- * Incognito chats and image data never reach storage.
+ * Image data never reaches storage. Everything is saved under the signed-in account's own key, and
+ * nothing is written until we know whose it is.
  */
+let storageUser: string | null = null
+const keyFor = (name: string) => (storageUser ? `${name}:${storageUser}` : null)
+
 let latest: { name: string; value: StorageValue<Data> } | null = null
 let timer: ReturnType<typeof setTimeout> | null = null
 
@@ -63,7 +72,6 @@ function serialize(value: StorageValue<Data>) {
   const { settings, chats, projects } = value.state
   const outChats: Record<string, Chat> = {}
   for (const [id, chat] of Object.entries(chats)) {
-    if (chat.incognito) continue
     const nodes: Record<string, Message> = {}
     for (const [mid, m] of Object.entries(chat.nodes)) {
       let next = m
@@ -78,7 +86,9 @@ function serialize(value: StorageValue<Data>) {
   return JSON.stringify({ state: { settings, chats: outChats, projects }, version: value.version })
 }
 
-function flush() {
+/** Writes any pending change now. Called when the tab hides and before the account changes. */
+export function flush() {
+  if (timer) clearTimeout(timer)
   timer = null
   if (!latest) return
   const { name, value } = latest
@@ -92,21 +102,27 @@ function flush() {
 
 const storage: PersistStorage<Data> = {
   getItem: (name) => {
+    const key = keyFor(name)
+    if (!key) return null
     try {
-      const raw = localStorage.getItem(name)
+      const raw = localStorage.getItem(key)
       return raw ? (JSON.parse(raw) as StorageValue<Data>) : null
     } catch {
       return null
     }
   },
   setItem: (name, value) => {
-    latest = { name, value }
+    const key = keyFor(name)
+    if (!key) return // nobody is signed in: there is nothing to save, and nobody to save it for
+    latest = { name: key, value }
     if (!timer) timer = setTimeout(flush, 500)
   },
   removeItem: (name) => {
     latest = null
+    const key = keyFor(name)
+    if (!key) return
     try {
-      localStorage.removeItem(name)
+      localStorage.removeItem(key)
     } catch {
       /* ignore */
     }
@@ -151,7 +167,6 @@ export const useStore = create<State>()(
           updatedAt: now,
           starred: false,
           projectId: opts.projectId ?? null,
-          incognito: opts.incognito ?? false,
           model: opts.model ?? s.settings.defaultModel,
           nodes: {},
           rootChildIds: [],
@@ -322,6 +337,8 @@ export const useStore = create<State>()(
       name: STORAGE_KEY,
       version: 1,
       storage,
+      // The account is not known when the page loads. activateUser() loads the right copy once it is.
+      skipHydration: true,
       partialize: (s): Data => ({ settings: s.settings, chats: s.chats, projects: s.projects }),
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<Data>
@@ -330,11 +347,105 @@ export const useStore = create<State>()(
         if (!settings.models.some((m) => m.id === settings.defaultModel)) settings.defaultModel = settings.models[0].id
         // Saved before the server existed: the old built-in demo choice is now "server" (which falls back to the demo model).
         if ((settings.provider as string) === "mock") settings.provider = "server"
+        // Incognito chats were removed. Older saved settings may still carry the switch.
+        delete (settings as { incognitoByDefault?: boolean }).incognitoByDefault
+        // "Extended thinking" became the High effort level.
+        const old = settings as { extendedThinking?: boolean; effort?: unknown }
+        if (!isEffort(old.effort)) settings.effort = old.extendedThinking === true ? "high" : DEFAULT_EFFORT
+        delete old.extendedThinking
+        // Themes and the city came later: anything unrecognised falls back to the defaults.
+        if (!isPalettePref(settings.palette)) settings.palette = DEFAULT_SETTINGS.palette
+        if (settings.scene !== "city" && settings.scene !== "off") settings.scene = DEFAULT_SETTINGS.scene
+        settings.sceneChosen = settings.sceneChosen === true
         return { ...current, settings, chats: p.chats ?? {}, projects: p.projects ?? {} }
       },
     }
   )
 )
+
+/* ---------------------------------------------------------------- */
+/* One saved copy per account                                        */
+/* ---------------------------------------------------------------- */
+
+const FRESH: Data = { settings: DEFAULT_SETTINGS, chats: {}, projects: {} }
+
+/** The appearance, as the first-paint script reads it. */
+function mirrorAppearance(settings: Settings) {
+  try {
+    localStorage.setItem(
+      APPEARANCE_KEY,
+      JSON.stringify({ theme: settings.theme, chatFont: settings.chatFont, effects: settings.effects, palette: settings.palette, scene: settings.scene })
+    )
+  } catch {
+    /* storage can be blocked */
+  }
+}
+
+let stopMirror: (() => void) | null = null
+
+/**
+ * Loads the saved copy that belongs to this account. The first account to sign in on a browser that used Cyphor
+ * before accounts existed also receives that older copy (moved, not copied, so a second person on the same browser does not).
+ */
+export async function activateUser(userId: string) {
+  flush()
+  stopMirror?.()
+  // Clear the screen's state while nobody owns it, so the clearing itself is never saved under anyone's key.
+  storageUser = null
+  useStore.setState(FRESH)
+  storageUser = userId
+  try {
+    const mine = `${STORAGE_KEY}:${userId}`
+    if (localStorage.getItem(mine) === null) {
+      const legacy = localStorage.getItem(STORAGE_KEY)
+      if (legacy !== null) {
+        localStorage.setItem(mine, legacy)
+        localStorage.removeItem(STORAGE_KEY)
+      }
+    }
+  } catch {
+    /* storage can be blocked: the app then runs from memory */
+  }
+  await useStore.persist.rehydrate()
+
+  mirrorAppearance(useStore.getState().settings)
+  stopMirror = useStore.subscribe((s, prev) => {
+    const a = s.settings
+    const b = prev.settings
+    if (a.theme !== b.theme || a.chatFont !== b.chatFont || a.effects !== b.effects || a.palette !== b.palette || a.scene !== b.scene) mirrorAppearance(a)
+  })
+}
+
+/** Forgets the signed-in account on this screen. Their saved copy stays on this device under their own key until they erase it. */
+export function deactivateUser() {
+  flush()
+  stopMirror?.()
+  stopMirror = null
+  storageUser = null
+  useStore.setState(FRESH)
+}
+
+/** How much room this account's saved copy takes in the browser. localStorage counts two bytes per UTF-16 character. */
+export function savedBytes() {
+  try {
+    const key = storageUser ? `${STORAGE_KEY}:${storageUser}` : STORAGE_KEY
+    return (localStorage.getItem(key)?.length ?? 0) * 2
+  } catch {
+    return 0
+  }
+}
+
+/** Removes this account's saved copy from this device (used by "Erase everything"). */
+export function forgetLocalCopy() {
+  latest = null
+  if (timer) clearTimeout(timer)
+  timer = null
+  try {
+    if (storageUser) localStorage.removeItem(`${STORAGE_KEY}:${storageUser}`)
+  } catch {
+    /* ignore */
+  }
+}
 
 /* ---------------------------------------------------------------- */
 /* Selectors and helpers                                             */
@@ -394,7 +505,6 @@ const SEP_B = "\u0002"
 export function useChatMetas(): ChatMeta[] {
   const sig = useStore((s) =>
     Object.values(s.chats)
-      .filter((c) => !c.incognito)
       .map((c) => [c.id, c.title, c.updatedAt, c.starred ? 1 : 0, c.projectId ?? "", c.titleFresh ? 1 : 0].join(SEP_A))
       .join(SEP_B)
   )

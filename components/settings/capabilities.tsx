@@ -2,9 +2,11 @@ import { useState } from "react"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { RadioGroup } from "@/components/ui/radio-group"
+import { EFFORTS, type Effort } from "@/lib/router/effort"
 import { useStore } from "@/lib/store"
 import { IconButton } from "../icon-button"
-import { Group, Pane, ToggleRow } from "./parts"
+import { Group, Pane, RadioCard, ToggleRow } from "./parts"
 
 const MAX_MEMORIES = 30
 
@@ -66,14 +68,18 @@ export function CapabilitiesTab() {
 
   return (
     <Pane title="Capabilities" description="Decide which tools Cyphor can reach for. The same switches live in the + menu of the message box.">
+      <Group title="Effort" hint="How hard a reply tries: it steers which models the router prefers and whether a reply reasons first. The model button in the message box changes it too.">
+        <RadioGroup value={s.effort} onValueChange={(v) => update({ effort: v as Effort })} aria-label="Effort" className="gap-2 sm:grid-cols-3">
+          {EFFORTS.map((e) => (
+            <RadioCard key={e.id} value={e.id}>
+              <span className="block text-sm font-medium">{e.label}</span>
+              <span className="block text-xs text-muted-foreground">{e.description}</span>
+            </RadioCard>
+          ))}
+        </RadioGroup>
+      </Group>
+
       <Group>
-        <ToggleRow
-          id="cap-thinking"
-          label="Extended thinking"
-          description="Cyphor reasons step by step before it answers. The reasoning is folded into a block you can open."
-          checked={s.extendedThinking}
-          onChange={(v) => update({ extendedThinking: v })}
-        />
         <ToggleRow
           id="cap-artifacts"
           label="Artifacts"

@@ -40,7 +40,7 @@ export default defineConfig({
     ? undefined
     : {
         command: "node tests/e2e/servers.mjs",
-        url: "http://127.0.0.1:4173/api/models",
+        url: "http://127.0.0.1:4173/login",
         reuseExistingServer: !process.env.CI,
         timeout: 420_000,
       },

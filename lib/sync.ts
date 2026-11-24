@@ -1,5 +1,6 @@
 import { create } from "zustand"
-import { STANDALONE } from "./provider"
+import { expireSession } from "./account"
+import { STANDALONE } from "./standalone"
 import { useStore } from "./store"
 import type { Chat, Message } from "./types"
 
@@ -8,7 +9,8 @@ import type { Chat, Message } from "./types"
  *
  * The browser stays the main copy: everything works offline and nothing waits on the network.
  * Changes are sent a moment after they settle, and on start any chat the server has but this
- * browser lacks (or has an older version of) is brought down. Incognito chats never leave the browser.
+ * browser lacks (or has an older version of) is brought down. Every call carries the account's sign-in cookie, and the
+ * server only ever returns and changes that account's conversations.
  */
 
 export type SyncState = "off" | "idle" | "syncing" | "offline" | "error"
@@ -34,10 +36,11 @@ function enabled() {
 }
 
 const streaming = (chat: Chat) => Object.values(chat.nodes).some((m) => m.status === "streaming")
-const syncable = (chat: Chat) => !chat.incognito && !streaming(chat)
+const syncable = (chat: Chat) => !streaming(chat)
 
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(path, { ...init, headers: { "Content-Type": "application/json", ...init.headers } })
+  if (res.status === 401) expireSession()
   if (!res.ok) throw new Error(`${init.method ?? "GET"} ${path} failed (${res.status})`)
   return (await res.json()) as T
 }
@@ -50,7 +53,7 @@ function forServer(chat: Chat) {
   for (const [id, m] of Object.entries(chat.nodes)) {
     nodes[id] = m.attachments?.some((a) => a.dataUrl) ? { ...m, attachments: m.attachments.map(({ dataUrl: _d, ...rest }) => rest) } : m
   }
-  return { ...chat, nodes, titleFresh: undefined, incognito: undefined }
+  return { ...chat, nodes, titleFresh: undefined }
 }
 
 function begin() {
@@ -164,10 +167,10 @@ export function startSync(): () => void {
         justPulled.delete(id)
         continue
       }
-      if (!chat.incognito) schedule(id)
+      schedule(id)
     }
     for (const id of Object.keys(prev.chats)) {
-      if (!s.chats[id] && !prev.chats[id].incognito) void remove(id)
+      if (!s.chats[id]) void remove(id)
     }
   })
 

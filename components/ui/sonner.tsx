@@ -23,8 +23,14 @@ const Toaster = ({ ...props }: ToasterProps) => {
         {
           "--normal-bg": "var(--popover)",
           "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
-          "--border-radius": "var(--radius)",
+          "--normal-border": "var(--input)",
+          "--border-radius": "2px",
+          "--success-bg": "var(--popover)",
+          "--success-text": "var(--signal)",
+          "--success-border": "color-mix(in srgb, var(--signal) 50%, var(--input))",
+          "--error-bg": "var(--popover)",
+          "--error-text": "var(--heat)",
+          "--error-border": "color-mix(in srgb, var(--heat) 55%, var(--input))",
         } as React.CSSProperties
       }
       {...props}

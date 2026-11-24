@@ -1,6 +1,7 @@
+import { mayHaveArtifacts, parseContent } from "@/lib/parse"
 import { useMemo } from "react"
 import { Progress } from "@/components/ui/progress"
-import { STORAGE_KEY, useStore } from "@/lib/store"
+import { savedBytes, useStore } from "@/lib/store"
 import { Group, Pane } from "./parts"
 
 const QUOTA_BYTES = 5 * 1024 * 1024
@@ -10,20 +11,11 @@ function Stat({ label, value, note }: { label: string; value: string; note?: str
     <div className="rounded-xl border bg-card p-4">
       <dt className="text-[13px] text-muted-foreground">{label}</dt>
       <dd className="mt-1">
-        <span className="block font-serif text-3xl leading-none tabular-nums">{value}</span>
+        <span className="block font-display text-3xl leading-none font-semibold tabular-nums">{value}</span>
         {note && <span className="mt-1.5 block text-xs text-muted-foreground">{note}</span>}
       </dd>
     </div>
   )
-}
-
-function storedBytes() {
-  try {
-    // localStorage counts two bytes per UTF-16 character.
-    return (localStorage.getItem(STORAGE_KEY)?.length ?? 0) * 2
-  } catch {
-    return 0
-  }
 }
 
 export function UsageTab() {
@@ -32,20 +24,18 @@ export function UsageTab() {
 
   const stats = useMemo(() => {
     let saved = 0
-    let incognito = 0
     let messages = 0
     let chars = 0
     let artifacts = 0
     for (const c of Object.values(chats)) {
-      if (c.incognito) incognito++
-      else saved++
+      saved++
       for (const m of Object.values(c.nodes)) {
         messages++
         chars += m.content.length
-        if (m.role === "assistant" && m.content.includes("<artifact")) artifacts += m.content.match(/<artifact[\s>]/g)?.length ?? 0
+        if (m.role === "assistant" && mayHaveArtifacts(m.content)) artifacts += parseContent(m.content).filter((x) => x.kind === "artifact").length
       }
     }
-    return { saved, incognito, messages, tokens: Math.ceil(chars / 4), artifacts, bytes: storedBytes() }
+    return { saved, messages, tokens: Math.ceil(chars / 4), artifacts, bytes: savedBytes() }
   }, [chats])
 
   const pct = Math.min(100, (stats.bytes / QUOTA_BYTES) * 100)
@@ -56,7 +46,7 @@ export function UsageTab() {
     <Pane title="Usage" description="A look at what is stored on this device. Nothing here is billed or sent anywhere.">
       <Group>
         <dl className="grid grid-cols-2 gap-3">
-          <Stat label="Saved chats" value={stats.saved.toLocaleString()} note={stats.incognito ? `${stats.incognito} incognito, not saved` : undefined} />
+          <Stat label="Saved chats" value={stats.saved.toLocaleString()} />
           <Stat label="Projects" value={Object.keys(projects).length.toLocaleString()} />
           <Stat label="Messages" value={stats.messages.toLocaleString()} note="Including edited and retried versions" />
           <Stat label="Artifacts" value={stats.artifacts.toLocaleString()} />

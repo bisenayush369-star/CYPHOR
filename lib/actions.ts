@@ -1,5 +1,5 @@
 import { BUILTIN_STYLES } from "./defaults"
-import { parseContent } from "./parse"
+import { parseContent, mayHaveArtifacts } from "./parse"
 import { buildSystemPrompt } from "./prompt"
 import { ProviderError, streamReply } from "./provider"
 import { href, navigate } from "./route"
@@ -13,7 +13,6 @@ const controllers = new Map<string, AbortController>()
 
 /** Opens the empty "new chat" screen. The keyboard only opens on its own where there is a physical one. */
 export function startNewChat() {
-  useUI.getState().setIncognito(useStore.getState().settings.incognitoByDefault)
   navigate(href.home)
   if (window.matchMedia("(pointer: coarse)").matches) return
   requestAnimationFrame(() => document.querySelector<HTMLTextAreaElement>("textarea[aria-label='Message to Cyphor']")?.focus())
@@ -85,34 +84,34 @@ async function run(chatId: string, userMsgId: string) {
   const t0 = performance.now()
   let acc = ""
   let commitTimer: ReturnType<typeof setTimeout> | null = null
-  let lastTick = 0
   let thinkEnd: number | null = null
   let artifactOpened = false
+
+  // On a wide screen the panel opens by itself as soon as an artifact starts, like Claude. Checked again when the
+  // reply ends, because a fast reply can be over before the next scheduled update.
+  const openArtifactOnce = () => {
+    if (artifactOpened || !mayHaveArtifacts(acc)) return
+    const seg = parseContent(acc).findLast((x) => x.kind === "artifact")
+    if (seg && seg.kind === "artifact") {
+      artifactOpened = true
+      if (wideScreen()) useUI.getState().openArtifact({ chatId, identifier: seg.artifact.identifier })
+    }
+  }
 
   const commit = () => {
     commitTimer = null
     useStore.getState().patchMessage(chatId, asstId, { content: acc })
     const now = performance.now()
-    if (now - lastTick > 120) {
-      lastTick = now
-      useUI.getState().bumpTick()
-    }
     if (thinkEnd === null && /<\/think(?:ing)?>/.test(acc)) thinkEnd = now - t0
-    if (!artifactOpened && acc.includes("<artifact")) {
-      const seg = parseContent(acc).findLast((x) => x.kind === "artifact")
-      if (seg && seg.kind === "artifact") {
-        artifactOpened = true
-        if (wideScreen()) useUI.getState().openArtifact({ chatId, identifier: seg.artifact.identifier })
-      }
-    }
+    openArtifactOnce()
   }
 
   let status: "done" | "stopped" | "error" = "done"
   let error: string | undefined
   try {
-    // The server keeps the turn unless this chat is incognito or saving is switched off.
+    // The server keeps the turn in the signed-in account unless saving is switched off.
     const save =
-      !chat.incognito && settings.syncHistory
+      settings.syncHistory
         ? { chatId, assistantId: asstId, title: chat.title, starred: chat.starred, projectId: chat.projectId, createdAt: chat.createdAt }
         : undefined
     const onMeta = (patch: Partial<Message>) => useStore.getState().patchMessage(chatId, asstId, patch)
@@ -139,6 +138,6 @@ async function run(chatId: string, userMsgId: string) {
     error,
     thinkingMs: hadThinking ? Math.round(thinkEnd ?? total) : undefined,
   })
+  openArtifactOnce()
   useUI.getState().setGenerating(chatId, false)
-  useUI.getState().bumpTick()
 }

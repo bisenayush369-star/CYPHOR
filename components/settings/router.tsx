@@ -28,9 +28,9 @@ function Pill({ tone, icon: Icon, children }: { tone: Tone; icon: LucideIcon; ch
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border px-2 py-px text-[11px] leading-4",
+        "inline-flex items-center gap-1 border px-2 py-px text-[11px] leading-4",
         tone === "ok" && "text-foreground",
-        tone === "warn" && "text-amber-700 dark:text-amber-400",
+        tone === "warn" && "text-cp-orange",
         tone === "bad" && "text-destructive",
         tone === "muted" && "text-muted-foreground"
       )}

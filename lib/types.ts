@@ -1,10 +1,14 @@
 import type { CouncilInfo, RouteInfo, RoutePriority, WebSource } from "./router/types"
+import type { Effort } from "./router/effort"
+import type { PalettePref } from "./scene/palettes"
 
 export type Role = "user" | "assistant"
-export type ArtifactType = "html" | "svg" | "markdown" | "code"
+export type ArtifactType = "html" | "react" | "svg" | "mermaid" | "markdown" | "code"
 export type ThemePref = "light" | "dark" | "system"
 export type ChatFont = "serif" | "sans" | "legible"
 export type EffectsLevel = "off" | "subtle" | "full"
+/** The background behind the chat: the moving city, or nothing (just the colour theme). */
+export type SceneMode = "city" | "off"
 /** "server" answers through this app's /api/chat. "openai" calls a chat API straight from the browser. */
 export type ProviderKind = "server" | "openai"
 
@@ -55,7 +59,6 @@ export interface Chat {
   updatedAt: number
   starred: boolean
   projectId: string | null
-  incognito?: boolean
   model: string
   nodes: Record<string, Message>
   rootChildIds: string[]
@@ -93,6 +96,12 @@ export interface Settings {
   theme: ThemePref
   chatFont: ChatFont
   effects: EffectsLevel
+  /** The colour theme, or "rotate" for a different one on every page load. */
+  palette: PalettePref
+  /** The moving city behind the chat. "off" shows the plain background, and the colour theme then changes on every refresh unless you pick one. */
+  scene: SceneMode
+  /** Whether this account has answered the "do you want the city?" question yet. */
+  sceneChosen: boolean
   sendWithEnter: boolean
   expandThinking: boolean
 
@@ -109,14 +118,14 @@ export interface Settings {
   customStyles: ResponseStyle[]
 
   webSearch: boolean
-  extendedThinking: boolean
+  /** How hard a reply should try: it steers routing, reasoning and length (see lib/router/effort.ts). */
+  effort: Effort
   research: boolean
   artifacts: boolean
   memory: boolean
   memories: string[]
   connectors: Record<string, boolean>
-  incognitoByDefault: boolean
-  /** Keep a copy of saved chats in the server's database (never for incognito chats). */
+  /** Keep a copy of your chats in your account's database, so they follow you to other devices. */
   syncHistory: boolean
 
   /** How the router chooses when you use a Cyphor model: balance everything, or lean on one thing. */

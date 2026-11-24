@@ -8,6 +8,7 @@
  */
 import type { CouncilInfo, CouncilMember, MessageMeta, ProviderId, RouteInfo, RoutePriority, Task, WebMode, WebSource } from "./router/types"
 import type { Attachment, Chat, Message } from "./types"
+import { DEFAULT_EFFORT, isEffort, type Effort } from "./router/effort"
 
 export const LIMITS = {
   /** Messages in one saved conversation. */
@@ -449,7 +450,7 @@ export function checkChat(input: unknown, fallbackModel = "cyphor-auto"): Checke
 
 /** The body of POST /api/chat, after checking. */
 export interface ChatRequest {
-  /** Saved under this conversation. null means "answer, but keep nothing" (incognito). */
+  /** Saved under this conversation. null means "answer, but keep nothing" (a one-off question). */
   chatId: string | null
   /** Id the browser already gave the reply it is waiting for. */
   assistantId: string
@@ -462,6 +463,8 @@ export interface ChatRequest {
   temperature: number
   maxTokens: number
   thinking: boolean
+  /** How hard to try: steers the routing preference and, when high, asks for reasoning. */
+  effort: Effort
   /** Web search or research is switched on, which the built-in demo model cannot do. */
   noAccess: boolean
   /** Ground the answer in a web search (needs TINYFISH_API_KEY), or read the top pages as well. */
@@ -472,7 +475,7 @@ export interface ChatRequest {
   disabledProviders: string[]
   /** The most providers God Mode asks at once. */
   godMax: number
-  /** Demo model only: 1 is normal speed. Automated tests use more. */
+  /** Demo model only: 1 is normal speed. Automated tests use more, or less (to 0.1) to watch a reply being written. */
   speed: number
 }
 
@@ -521,12 +524,13 @@ export function checkChatRequest(input: unknown): Checked<ChatRequest> {
       temperature: Math.min(2, Math.max(0, temperature)),
       maxTokens: Math.round(Math.min(128_000, Math.max(1, maxTokens))),
       thinking: input.thinking === true,
+      effort: isEffort(input.effort) ? input.effort : DEFAULT_EFFORT,
       noAccess: input.noAccess === true,
       web: input.web === "search" || input.web === "research" ? input.web : "off",
       priority: input.priority === "speed" || input.priority === "quality" || input.priority === "free" ? input.priority : "balanced",
       disabledProviders: Array.isArray(input.disabledProviders) ? input.disabledProviders.filter((p): p is string => typeof p === "string" && SLUG_RE.test(p)).slice(0, 16) : [],
       godMax: Math.round(Math.min(6, Math.max(2, finite(input.godMax, 4)))),
-      speed: Math.min(50, Math.max(1, speed)),
+      speed: Math.min(50, Math.max(0.1, speed)),
     },
   }
 }

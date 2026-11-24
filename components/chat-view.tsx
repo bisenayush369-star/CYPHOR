@@ -56,7 +56,7 @@ export function ChatView({ id }: { id: string }) {
               <MessageSquareOff />
             </EmptyMedia>
             <EmptyTitle>This chat isn't here</EmptyTitle>
-            <EmptyDescription>It may have been deleted, or it was an incognito chat that ended when the page reloaded.</EmptyDescription>
+            <EmptyDescription>It may have been deleted, or it was saved under a different account.</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <Button asChild>
@@ -84,7 +84,7 @@ export function ChatView({ id }: { id: string }) {
       </div>
 
       <div className="relative shrink-0 px-3 pt-1 pb-safe sm:px-6">
-        <div className="pointer-events-none absolute inset-x-0 bottom-full h-8 bg-gradient-to-t from-background to-transparent" />
+        <div className="scene-fade pointer-events-none absolute inset-x-0 bottom-full h-8 bg-gradient-to-t from-background to-transparent" />
         <div className="mx-auto w-full max-w-[46rem]">
           {away && (
             <div className="pointer-events-none absolute -top-12 left-0 flex w-full justify-center">
@@ -93,7 +93,7 @@ export function ChatView({ id }: { id: string }) {
                 variant="outline"
                 aria-label="Scroll to latest message"
                 onClick={() => toBottom(true)}
-                className="pointer-events-auto size-9 rounded-full bg-card shadow-md animate-in fade-in zoom-in-90 duration-150 max-sm:size-10 pointer-coarse:size-10"
+                className="pointer-events-auto size-9 rounded-sm bg-card shadow-md animate-in fade-in zoom-in-90 duration-150 max-sm:size-10 pointer-coarse:size-10"
               >
                 <ArrowDown />
               </Button>

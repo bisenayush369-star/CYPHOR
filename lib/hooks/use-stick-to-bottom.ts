@@ -3,9 +3,15 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 /**
  * Keeps a scroll container pinned to the bottom while content grows (streaming replies),
  * lets the reader scroll away without being yanked back, and reports when they are away.
+ *
+ * `start` says where a newly opened container begins: at the end (a chat, or a file still being written) or at the
+ * top (a file that is already finished, which should be read from its first line). It is only read when `resetKey`
+ * changes, so a file that finishes while it is on screen is not pulled back to the top.
  */
-export function useStickToBottom<T extends HTMLElement>(resetKey: string, growthKey: unknown) {
+export function useStickToBottom<T extends HTMLElement>(resetKey: string, growthKey: unknown, start: "bottom" | "top" = "bottom") {
   const ref = useRef<T>(null)
+  const startRef = useRef(start)
+  startRef.current = start
   const stuck = useRef(true)
   const lastTop = useRef(0)
   const [away, setAway] = useState(false)
@@ -28,12 +34,14 @@ export function useStickToBottom<T extends HTMLElement>(resetKey: string, growth
     setAway(distance > 160)
   }, [])
 
-  // Jump to the end when a different chat opens.
+  // Jump to the start position when a different chat (or file) opens.
   useLayoutEffect(() => {
-    stuck.current = true
+    const atEnd = startRef.current === "bottom"
+    stuck.current = atEnd
+    lastTop.current = 0
     setAway(false)
     const el = ref.current
-    if (el) el.scrollTop = el.scrollHeight
+    if (el) el.scrollTop = atEnd ? el.scrollHeight : 0
   }, [resetKey])
 
   // Follow growth while pinned.
